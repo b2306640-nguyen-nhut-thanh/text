@@ -32,7 +32,7 @@ class _ProductsOverviewScreenState
           ),
           ShoppingCartButton(
             onPressed: () {
-              print("Go to cart screen");
+              print('Go to cart screen');
             },
           ),
         ],

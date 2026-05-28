@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myshop/ui/products/products_overview_screen.dart';
+import 'package:myshop/ui/products/user_products_screen.dart';
 import 'ui/products/products_manager.dart';
 import 'ui/products/product_detail_screen.dart';
 
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: themeData,
       home: const SafeArea(
-        child: ProductsOverviewScreen() ,
+        child: UserProductsScreen() ,
       ),
     );
   }
