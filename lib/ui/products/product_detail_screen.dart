@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/product.dart';
 
-class ProductDetailScreen extends StatelessWidget {
+class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen(
     this.product, {
     super.key,
@@ -11,14 +11,102 @@ class ProductDetailScreen extends StatelessWidget {
   final Product product;
 
   @override
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  late bool _isFavorite;
+  int _quantity = 1;
+  String _selectedColor = 'Red';
+  String _selectedSize = 'M';
+
+  final List<String> _colors = ['Red', 'Blue', 'Black', 'White'];
+  final List<String> _sizes = ['S', 'M', 'L', 'XL'];
+
+  @override
+  void initState() {
+    super.initState();
+    _isFavorite = widget.product.isFavorite;
+  }
+
+  void _increaseQuantity() {
+    setState(() {
+      _quantity++;
+    });
+  }
+
+  void _decreaseQuantity() {
+    if (_quantity > 1) {
+      setState(() {
+        _quantity--;
+      });
+    }
+  }
+
+  void _toggleFavorite() {
+    setState(() {
+      _isFavorite = !_isFavorite;
+    });
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            _isFavorite
+                ? 'Added to favorite list'
+                : 'Removed from favorite list',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+  }
+
+  void _addToCart() {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            'Added $_quantity item(s) - $_selectedColor - $_selectedSize to cart',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final product = widget.product;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(product.title),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _isFavorite ? Icons.favorite : Icons.favorite_border,
+            ),
+            color: Theme.of(context).colorScheme.secondary,
+            onPressed: _toggleFavorite,
+          ),
+        ],
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(12),
+        child: ElevatedButton.icon(
+          onPressed: _addToCart,
+          icon: const Icon(Icons.shopping_cart),
+          label: const Text('Add to cart'),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            textStyle: const TextStyle(fontSize: 18),
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
-          children: <Widget>[
+          children: [
             SizedBox(
               height: 300,
               width: double.infinity,
@@ -27,23 +115,108 @@ class ProductDetailScreen extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(height: 10),
-            Text(
-              '\$${product.price}',
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 20,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              width: double.infinity,
-              child: Text(
-                product.description,
-                textAlign: TextAlign.center,
-                softWrap: true,
-                style: Theme.of(context).textTheme.titleLarge,
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.title,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '\$${product.price}',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    product.description,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 24),
+
+                  const Text(
+                    'Color',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: _colors.map((color) {
+                      return ChoiceChip(
+                        label: Text(color),
+                        selected: _selectedColor == color,
+                        onSelected: (_) {
+                          setState(() {
+                            _selectedColor = color;
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Size',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: _sizes.map((size) {
+                      return ChoiceChip(
+                        label: Text(size),
+                        selected: _selectedSize == size,
+                        onSelected: (_) {
+                          setState(() {
+                            _selectedSize = size;
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Quantity',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: _decreaseQuantity,
+                        icon: const Icon(Icons.remove_circle_outline),
+                      ),
+                      Container(
+                        width: 50,
+                        alignment: Alignment.center,
+                        child: Text(
+                          '$_quantity',
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: _increaseQuantity,
+                        icon: const Icon(Icons.add_circle_outline),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
