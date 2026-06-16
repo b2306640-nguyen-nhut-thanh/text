@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'ui/screens.dart';
@@ -78,6 +80,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ProductsManager()),
+        ChangeNotifierProvider(create: (_) => OrdersManager()),
         ChangeNotifierProvider(create: (_) => CartManager()),
       ],
       child: MaterialApp.router(
