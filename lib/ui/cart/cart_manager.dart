@@ -34,12 +34,12 @@ class CartManager with ChangeNotifier {
     return total;
   }
 
-  void addItem(Product product) {
+  void addItem(Product product, {int quantity = 1}) {
     if (_items.containsKey(product.id)) {
       _items.update(
         product.id!,
         (existingCartItem) => existingCartItem.copyWith(
-          quantity: existingCartItem.quantity + 1,
+          quantity: existingCartItem.quantity + quantity,
         ),
       );
     } else {
@@ -50,7 +50,7 @@ class CartManager with ChangeNotifier {
           title: product.title,
           imageUrl: product.imageUrl,
           price: product.price,
-          quantity: 1,
+          quantity: quantity,
         ),
       );
     }

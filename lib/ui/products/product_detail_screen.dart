@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../cart/cart_screen.dart';
 import 'products_overview_screen.dart';
 import '../../models/product.dart';
+import '../cart/cart_manager.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen(
@@ -64,16 +66,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   void _addToCart() {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            'Added $_quantity item(s) - $_selectedColor - $_selectedSize to cart',
-            textAlign: TextAlign.center,
+    try {
+      context.read<CartManager>().addItem(widget.product, quantity: _quantity);
+      
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              'Added $_quantity item(s) - $_selectedColor - $_selectedSize to cart',
+              textAlign: TextAlign.center,
+            ),
+            duration: const Duration(seconds: 2),
+            backgroundColor: Colors.green,
           ),
-        ),
+        );
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not find CartManager Provider!')),
       );
+    }
   }
 
   @override
@@ -91,21 +103,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 context,
                 PageRouteBuilder(
                   pageBuilder: (_, __, ___) => const ProductsOverviewScreen(),
-                  transitionsBuilder:
-                      (
-                        context,
-                        animation,
-                        secondaryAnimation,
-                        child,
-                      ) {
-                        return FadeTransition(
-                          opacity: CurvedAnimation(
-                            parent: animation,
-                            curve: Curves.easeInOut,
-                          ),
-                          child: child,
-                        );
-                      },
+                  transitionsBuilder: (
+                    context,
+                    animation,
+                    secondaryAnimation,
+                    child,
+                  ) {
+                    return FadeTransition(
+                      opacity: CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeInOut,
+                      ),
+                      child: child,
+                    );
+                  },
                 ),
               );
             },
@@ -117,27 +128,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 context,
                 PageRouteBuilder(
                   pageBuilder: (_, __, ___) => const CartScreen(),
-                  transitionsBuilder:
-                      (
-                        context,
-                        animation,
-                        secondaryAnimation,
-                        child,
-                      ) {
-                        return SlideTransition(
-                          position:
-                              Tween<Offset>(
-                                begin: const Offset(1, 0),
-                                end: Offset.zero,
-                              ).animate(
-                                CurvedAnimation(
-                                  parent: animation,
-                                  curve: Curves.easeInOut,
-                                ),
-                              ),
-                          child: child,
-                        );
-                      },
+                  transitionsBuilder: (
+                    context,
+                    animation,
+                    secondaryAnimation,
+                    child,
+                  ) {
+                    return SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(1, 0),
+                        end: Offset.zero,
+                      ).animate(
+                        CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeInOut,
+                        ),
+                      ),
+                      child: child,
+                    );
+                  },
                 ),
               );
             },
@@ -198,7 +207,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 24),
-
                   const Text(
                     'Color',
                     style: TextStyle(
@@ -221,7 +229,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       );
                     }).toList(),
                   ),
-
                   const SizedBox(height: 24),
                   const Text(
                     'Size',
@@ -245,7 +252,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       );
                     }).toList(),
                   ),
-
                   const SizedBox(height: 24),
                   const Text(
                     'Quantity',
