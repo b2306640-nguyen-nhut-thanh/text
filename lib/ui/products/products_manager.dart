@@ -4,6 +4,7 @@ import '../../models/product.dart';
 
 class ProductsManager with ChangeNotifier {
   final List<Product> _items = [
+    /*
     Product(
       id: 'p1',
       title: 'Red Shirt',
@@ -38,6 +39,7 @@ class ProductsManager with ChangeNotifier {
           'https://upload.wikimedia.org/wikipedia/commons/1/14/Cast-Iron-Pan.jpg',
       isFavorite: true,
     ),
+    */
   ];
 
   int get itemCount {

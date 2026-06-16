@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'ui/screens.dart';
 import 'package:provider/provider.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -73,6 +74,20 @@ class MyApp extends StatelessWidget {
           path: '/my-products',
           builder: (context, state) =>
               const SafeArea(child: UserProductsScreen()),
+        ),
+        GoRoute(
+          path: '/my-products/new',
+          builder: (context, state) => SafeArea(child: EditProductScreen(null)),
+        ),
+        GoRoute(
+          path: '/my-products/:productId/edit',
+          builder: (context, state) {
+            final productId = state.pathParameters['productId'];
+            final product = productId != null
+                ? context.read<ProductsManager>().findById(productId)
+                : null;
+            return SafeArea(child: EditProductScreen(product));
+          },
         ),
       ],
     );
