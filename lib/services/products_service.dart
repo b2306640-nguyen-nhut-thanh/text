@@ -60,4 +60,45 @@ class ProductsService {
       return products;
     }
   }
+
+  Future<Product?> updateProduct(Product product) async {
+    try {
+      final pb = await getPocketbaseInstance();
+
+      final productModel = await pb
+          .collection('products')
+          .update(
+            product.id!,
+            body: product.toJson(),
+            files: product.featuredImage != null
+                ? [
+                    http.MultipartFile.fromBytes(
+                      'featuredImage',
+                      await product.featuredImage!.readAsBytes(),
+                      filename: product.featuredImage!.uri.pathSegments.last,
+                    ),
+                  ]
+                : [],
+          );
+
+      return product.copyWith(
+        imageUrl: product.featuredImage != null
+            ? _getFeaturedImageUrl(pb, productModel)
+            : product.imageUrl,
+      );
+    } catch (error) {
+      return null;
+    }
+  }
+
+  Future<bool> deleteProduct(String id) async {
+    try {
+      final pb = await getPocketbaseInstance();
+      await pb.collection('products').delete(id);
+
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
 }
