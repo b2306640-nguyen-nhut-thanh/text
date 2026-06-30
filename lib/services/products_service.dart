@@ -1,6 +1,5 @@
 import 'package:http/http.dart' as http;
 import 'package:pocketbase/pocketbase.dart';
-
 import '../models/product.dart';
 import 'pocketbase_client.dart';
 

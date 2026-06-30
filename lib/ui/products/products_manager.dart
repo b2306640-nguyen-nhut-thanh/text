@@ -1,12 +1,11 @@
 import 'package:flutter/foundation.dart';
-
 import '../../models/product.dart';
 import '../../services/products_service.dart';
 
 class ProductsManager with ChangeNotifier {
   final ProductsService _productsService = ProductsService();
 
-  final List<Product> _items = [
+  List<Product> _items = [
     Product(
       id: 'p1',
       title: 'Red Shirt',
@@ -41,7 +40,6 @@ class ProductsManager with ChangeNotifier {
           'https://upload.wikimedia.org/wikipedia/commons/1/14/Cast-Iron-Pan.jpg',
       isFavorite: true,
     ),
-
   ];
 
   int get itemCount {
@@ -64,6 +62,18 @@ class ProductsManager with ChangeNotifier {
     }
   }
 
+  Future<void> fetchProducts() async {
+    _items = await _productsService.fetchProducts();
+    notifyListeners();
+  }
+
+  Future<void> fetchUserProducts() async {
+    _items = await _productsService.fetchProducts(
+      filteredByUser: true,
+    );
+    notifyListeners();
+  }
+
   Future<void> addProduct(Product product) async {
     final newProduct = await _productsService.addProduct(product);
     if (newProduct != null) {
@@ -82,10 +92,7 @@ class ProductsManager with ChangeNotifier {
 
   void deleteProduct(String id) {
     final index = _items.indexWhere((item) => item.id == id);
-    if (index >= 0) {
-      _items.removeAt(index);
-      notifyListeners();
-    }
+    _items.removeAt(index);
+    notifyListeners();
   }
 }
-
