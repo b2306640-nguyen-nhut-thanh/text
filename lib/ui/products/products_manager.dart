@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
 
 import '../../models/product.dart';
+import '../../services/products_service.dart';
 
 class ProductsManager with ChangeNotifier {
+  final ProductsService _productsService = ProductsService();
+
   final List<Product> _items = [
     Product(
       id: 'p1',
@@ -61,16 +64,15 @@ class ProductsManager with ChangeNotifier {
     }
   }
 
-  void addProduct(Product product) {
-    _items.add(
-      product.copyWith(
-        id: 'p${DateTime.now().toIso8601String()}',
-      ),
-    );
-    notifyListeners();
+  Future<void> addProduct(Product product) async {
+    final newProduct = await _productsService.addProduct(product);
+    if (newProduct != null) {
+      _items.add(newProduct);
+      notifyListeners();
+    }
   }
 
-  void updateProduct(Product product) {
+  Future<void> updateProduct(Product product) async {
     final index = _items.indexWhere((item) => item.id == product.id);
     if (index >= 0) {
       _items[index] = product;
@@ -78,10 +80,12 @@ class ProductsManager with ChangeNotifier {
     }
   }
 
-  void deleteProduct (String id){
+  void deleteProduct(String id) {
     final index = _items.indexWhere((item) => item.id == id);
-    _items.removeAt(index);
-    notifyListeners();
+    if (index >= 0) {
+      _items.removeAt(index);
+      notifyListeners();
+    }
   }
-
 }
+

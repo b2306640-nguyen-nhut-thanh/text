@@ -1,8 +1,11 @@
+import 'dart:io';
+
 class Product {
   final String? id;
   final String title;
   final String description;
   final double price;
+  final File? featuredImage;
   final String imageUrl;
   final bool isFavorite;
 
@@ -11,7 +14,8 @@ class Product {
     required this.title,
     required this.description,
     required this.price,
-    required this.imageUrl,
+    this.featuredImage,
+    this.imageUrl = '',
     this.isFavorite = false,
   });
 
@@ -20,6 +24,7 @@ class Product {
     String? title,
     String? description,
     double? price,
+    File? featuredImage,
     String? imageUrl,
     bool? isFavorite,
   }) {
@@ -28,8 +33,33 @@ class Product {
       title: title ?? this.title,
       description: description ?? this.description,
       price: price ?? this.price,
+      featuredImage: featuredImage ?? this.featuredImage,
       imageUrl: imageUrl ?? this.imageUrl,
       isFavorite: isFavorite ?? this.isFavorite,
+    );
+  }
+
+  bool hasFeaturedImage() {
+    return featuredImage != null || imageUrl.isNotEmpty;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'description': description,
+      'price': price,
+      'isFavorite': isFavorite,
+    };
+  }
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'],
+      title: json['title'],
+      description: json['description'],
+      price: json['price'],
+      isFavorite: json['isFavorite'] ?? false,
+      imageUrl: json['imageUrl'] ?? '',
     );
   }
 }
