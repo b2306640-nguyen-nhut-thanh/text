@@ -37,6 +37,14 @@ class AppDrawer extends StatelessWidget {
               context.go('/my-products');
             },
           ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.exit_to_app),
+            title: const Text('Logout'),
+            onTap: () {
+              context.go('logout');
+            },
+          )
         ],
       ),
     );

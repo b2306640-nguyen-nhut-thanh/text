@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'ui/screens.dart';
@@ -43,10 +41,53 @@ class MyApp extends StatelessWidget {
       ),
     );
 
+    final authManager = AuthManager();
+
     final router = GoRouter(
       debugLogDiagnostics: true,
-      initialLocation: '/products',
+      initialLocation: '/auto-login',
+      refreshListenable: authManager,
+      redirect: (context, state) {
+        final authManager = context.read<AuthManager>();
+        final isAtAuthScreen = state.fullPath == '/auth';
+
+        if (!authManager.isAuth && !isAtAuthScreen) {
+          return '/auth';
+        }
+         
+        if (authManager.isAuth && isAtAuthScreen) {
+          return '/products';
+        }
+        return null;
+
+      },
       routes: [
+        GoRoute(
+          path: '/auth',
+          builder: (context, state) => 
+              const SafeArea(child: AuthScreen()),
+        ),
+
+        GoRoute(
+          path: '/auto-login',
+          builder: (context, state) {
+            return FutureBuilder(
+              future: context.read<AuthManager>().tryAutoLogin(),
+              builder: (context, authSnapshot) =>
+                const SafeArea(child: SplashScreen()),
+            );
+          },
+        ),
+
+        GoRoute(
+          path: '/logout',
+          builder: (context, state) => FutureBuilder(
+            future: context.read<AuthManager>().logout(),
+            builder: (context, authSnapshot) =>
+              const SafeArea(child: SplashScreen()),
+          ),
+        ),
+
         GoRoute(
           path: '/products',
           builder: (context, state) =>
@@ -59,7 +100,7 @@ class MyApp extends StatelessWidget {
             final product = context.read<ProductsManager>().findById(
               productId,
             )!;
-            return SafeArea(child: ProductDetailScreen(product!));
+            return SafeArea(child: ProductDetailScreen(product));
           },
         ),
         GoRoute(
@@ -94,9 +135,10 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ProductsManager()),
-        ChangeNotifierProvider(create: (_) => OrdersManager()),
-        ChangeNotifierProvider(create: (_) => CartManager()),
+        ChangeNotifierProvider.value(value: authManager),
+        ChangeNotifierProvider(create: (context) => ProductsManager()),
+        ChangeNotifierProvider(create: (context) => OrdersManager()),
+        ChangeNotifierProvider(create: (context) => CartManager()),
       ],
       child: MaterialApp.router(
         title: 'My Shop',

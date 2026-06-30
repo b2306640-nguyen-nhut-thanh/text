@@ -1,5 +1,27 @@
 import 'package:flutter/material.dart';
 
+void showErrorDialog(
+  BuildContext context,
+  String message,
+) {
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      icon: const Icon(Icons.error),
+      title: const Text('An Error Occurred'),
+      content: Text(message),
+      actions: [
+        ActionButton(
+          actionText: 'OK',
+          onPressed: () {
+            Navigator.of(ctx).pop();
+          },
+        ),
+      ],
+    ),
+  );
+}
+
 Future<bool?> showConfirmDialog(
   BuildContext context,
   String message,
@@ -54,9 +76,9 @@ class ActionButton extends StatelessWidget {
       child: Text(
         actionText ?? 'Okay',
         style: Theme.of(context).textTheme.titleMedium!.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontSize: 24,
-            ),
+          color: Theme.of(context).colorScheme.primary,
+          fontSize: 24,
+        ),
       ),
     );
   }

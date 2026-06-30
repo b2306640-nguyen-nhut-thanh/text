@@ -89,7 +89,7 @@ class ShoppingCartButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<CartManager>(
-      builder: (_, cartManager, __) {
+      builder: (_, cartManager, _) {
         return IconButton(
           icon: Badge.count(
             count: cartManager.productCount,

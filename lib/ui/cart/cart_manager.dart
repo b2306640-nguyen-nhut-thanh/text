@@ -34,23 +34,36 @@ class CartManager with ChangeNotifier {
     return total;
   }
 
-  void addItem(Product product, {int quantity = 1}) {
-    if (_items.containsKey(product.id)) {
+  String _buildItemKey(Product product, {String? color, String? size}) {
+    return '${product.id}_${color ?? 'default'}_${size ?? 'default'}';
+  }
+
+  void addItem(
+    Product product, {
+    int quantity = 1,
+    String? color,
+    String? size,
+  }) {
+    final itemKey = _buildItemKey(product, color: color, size: size);
+
+    if (_items.containsKey(itemKey)) {
       _items.update(
-        product.id!,
+        itemKey,
         (existingCartItem) => existingCartItem.copyWith(
           quantity: existingCartItem.quantity + quantity,
         ),
       );
     } else {
       _items.putIfAbsent(
-        product.id!,
+        itemKey,
         () => CartItem(
-          id: '${DateTime.now().toIso8601String()}',
+          id: DateTime.now().toIso8601String(),
           title: product.title,
           imageUrl: product.imageUrl,
           price: product.price,
           quantity: quantity,
+          color: color,
+          size: size,
         ),
       );
     }

@@ -77,7 +77,11 @@ class ItemInfoCard extends StatelessWidget {
           ),
           title: Text(cartItem.title),
           subtitle: Text(
-            'Total: \$${(cartItem.price * cartItem.quantity)}',
+            [
+              'Total: \$${(cartItem.price * cartItem.quantity)}',
+              if (cartItem.color != null) 'Color: ${cartItem.color}',
+              if (cartItem.size != null) 'Size: ${cartItem.size}',
+            ].join(' • '),
           ),
           trailing: Text(
             '${cartItem.quantity} x \$${cartItem.price}',

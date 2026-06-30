@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../cart/cart_screen.dart';
-import 'products_overview_screen.dart';
 import '../../models/product.dart';
 import '../cart/cart_manager.dart';
+import '../cart/cart_screen.dart';
+import 'products_overview_screen.dart';
+import 'products_manager.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen(
@@ -18,7 +19,6 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
-  late bool _isFavorite;
   int _quantity = 1;
   String _selectedColor = 'Red';
   String _selectedSize = 'M';
@@ -29,7 +29,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _isFavorite = widget.product.isFavorite;
   }
 
   void _increaseQuantity() {
@@ -46,51 +45,110 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
+  void _goHome() {
+    Navigator.of(context).pushAndRemoveUntil(
+      PageRouteBuilder(
+        pageBuilder: (_, _, _) => const ProductsOverviewScreen(),
+        transitionDuration: const Duration(milliseconds: 300),
+        transitionsBuilder: (_, animation, _, child) {
+          final curved = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeInOutCubic,
+          );
+          return FadeTransition(
+            opacity: curved,
+            child: child,
+          );
+        },
+      ),
+      (route) => false,
+    );
+  }
+
+  void _goCart() {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (_, _, _) => const CartScreen(),
+        transitionDuration: const Duration(milliseconds: 300),
+        transitionsBuilder: (_, animation, _, child) {
+          final curved = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeInOut,
+          );
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(1, 0),
+              end: Offset.zero,
+            ).animate(curved),
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+
   void _toggleFavorite() {
-    setState(() {
-      _isFavorite = !_isFavorite;
-    });
+    final productsManager = context.read<ProductsManager>();
+    final currentProduct = _currentProduct;
+    productsManager.updateProduct(
+      currentProduct.copyWith(
+        isFavorite: !currentProduct.isFavorite,
+      ),
+    );
 
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
           content: Text(
-            _isFavorite
-                ? 'Added to favorite list'
-                : 'Removed from favorite list',
+            currentProduct.isFavorite
+                ? 'Removed from favorite list'
+                : 'Added to favorite list',
             textAlign: TextAlign.center,
           ),
         ),
       );
   }
 
-  void _addToCart() {
-    try {
-      context.read<CartManager>().addItem(widget.product, quantity: _quantity);
-      
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(
-              'Added $_quantity item(s) - $_selectedColor - $_selectedSize to cart',
-              textAlign: TextAlign.center,
-            ),
-            duration: const Duration(seconds: 2),
-            backgroundColor: Colors.green,
-          ),
-        );
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not find CartManager Provider!')),
-      );
+  Product get _currentProduct {
+    final productId = widget.product.id;
+    if (productId == null) {
+      return widget.product;
     }
+
+    return context.read<ProductsManager>().findById(productId) ?? widget.product;
+  }
+
+  void _addToCart() {
+    final product = _currentProduct;
+    context.read<CartManager>().addItem(
+      product,
+      quantity: _quantity,
+      color: _selectedColor,
+      size: _selectedSize,
+    );
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            'Added $_quantity item(s) - $_selectedColor - $_selectedSize to cart',
+            textAlign: TextAlign.center,
+          ),
+          duration: const Duration(seconds: 2),
+          backgroundColor: Colors.green,
+        ),
+      );
   }
 
   @override
   Widget build(BuildContext context) {
-    final product = widget.product;
+    final product = context.watch<ProductsManager>().findById(
+          widget.product.id ?? '',
+        ) ??
+        widget.product;
+    final cart = context.watch<CartManager>();
 
     return Scaffold(
       appBar: AppBar(
@@ -98,62 +156,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.home),
-            onPressed: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => const ProductsOverviewScreen(),
-                  transitionsBuilder: (
-                    context,
-                    animation,
-                    secondaryAnimation,
-                    child,
-                  ) {
-                    return FadeTransition(
-                      opacity: CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeInOut,
-                      ),
-                      child: child,
-                    );
-                  },
-                ),
-              );
-            },
+            onPressed: _goHome,
           ),
           IconButton(
-            icon: const Icon(Icons.shopping_cart),
-            onPressed: () {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => const CartScreen(),
-                  transitionsBuilder: (
-                    context,
-                    animation,
-                    secondaryAnimation,
-                    child,
-                  ) {
-                    return SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(1, 0),
-                        end: Offset.zero,
-                      ).animate(
-                        CurvedAnimation(
-                          parent: animation,
-                          curve: Curves.easeInOut,
-                        ),
-                      ),
-                      child: child,
-                    );
-                  },
-                ),
-              );
-            },
+            icon: Badge.count(
+              count: cart.productCount,
+              child: const Icon(Icons.shopping_cart),
+            ),
+            onPressed: _goCart,
           ),
           IconButton(
             icon: Icon(
-              _isFavorite ? Icons.favorite : Icons.favorite_border,
+              product.isFavorite ? Icons.favorite : Icons.favorite_border,
             ),
             color: Theme.of(context).colorScheme.secondary,
             onPressed: _toggleFavorite,
