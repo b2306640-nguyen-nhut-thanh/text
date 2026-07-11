@@ -1,49 +1,34 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 
-import '../../models/user.dart';
+import '../../models/app_user.dart';
 import '../../services/auth_service.dart';
 
 class AuthManager with ChangeNotifier {
-  late final AuthService _authService;
+  final AuthService _authService = AuthService();
+  AppUser? _user;
 
-  User? _loggedInUser;
-
-  AuthManager() {
-    _authService = AuthService(
-      onAuthChange: (user) {
-        _loggedInUser = user;
-        notifyListeners();
-      },
-    );
-  }
-
-  bool get isAuth {
-    return _loggedInUser != null;
-  }
-
-  User? get user {
-    return _loggedInUser;
-  }
-
-  Future<User> signup(String email, String password) {
-    return _authService.signup(email, password);
-  }
-
-  Future<User> login(String email, String password) {
-    return _authService.login(email, password);
-  }
+  bool get isAuth => _user != null;
+  bool get isAdmin => _user?.isAdmin ?? false;
+  AppUser? get user => _user;
 
   Future<void> tryAutoLogin() async {
-    final user = await _authService.getUserFromStore();
-    if (user != null) {
-      _loggedInUser = user;
-      notifyListeners();
-    }
+    _user = await _authService.tryAutoLogin();
+    notifyListeners();
+  }
+
+  Future<void> login(String email, String password) async {
+    _user = await _authService.login(email, password);
+    notifyListeners();
   }
 
   Future<void> logout() async {
-    return _authService.logout();
+    await _authService.logout();
+    _user = null;
+    notifyListeners();
+  }
+
+  Future<void> updateProfile(AppUser updatedUser) async {
+    _user = await _authService.updateProfile(updatedUser);
+    notifyListeners();
   }
 }

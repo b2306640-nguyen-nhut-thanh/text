@@ -1,72 +1,42 @@
-import 'package:pocketbase/pocketbase.dart';
-import '../models/user.dart';
-import 'pocketbase_client.dart';
+import '../models/app_user.dart';
+import 'travel_storage_service.dart';
 
 class AuthService {
-  void Function(User? user)? onAuthChange;
+  static const _authKey = 'travel_is_auth';
+  static const _userKey = 'travel_user';
+  static const _adminEmail = 'admin@travel.com';
+  static const _adminPassword = 'admin123';
+  final TravelStorageService _storage = TravelStorageService();
 
-  AuthService({this.onAuthChange}) {
-    if (onAuthChange != null) {
-      getPocketbaseInstance().then((pb) {
-        pb.authStore.onChange.listen((event) {
-          onAuthChange!(
-            event.record == null ? null : User.fromJson(event.record!.toJson()),
-          );
-        });
-      });
+  Future<AppUser?> tryAutoLogin() async {
+    final isAuth = await _storage.readBool(_authKey);
+    if (!isAuth) {
+      return null;
     }
+    final user = await _storage.readMap(_userKey);
+    return user == null ? null : AppUser.fromJson(user);
   }
 
-  Future<User> signup(String email, String password) async {
-    final pb = await getPocketbaseInstance();
-
-    try {
-      final record = await pb
-          .collection('users')
-          .create(
-            body: {
-              'email': email,
-              'password': password,
-              'passwordConfirm': password,
-            },
-          );
-      return User.fromJson(record.toJson());
-    } catch (error) {
-      if (error is ClientException) {
-        throw Exception(error.response['message']);
-      }
-      throw Exception("An error occurred");
-    }
-  }
-
-  Future<User> login(String email, String password) async {
-    final pb = await getPocketbaseInstance();
-
-    try {
-      final authRecord = await pb
-          .collection('users')
-          .authWithPassword(email, password);
-      return User.fromJson(authRecord.record.toJson());
-    } catch (error) {
-      if (error is ClientException) {
-        throw Exception(error.response['message']);
-      }
-      throw Exception("An error occurred");
-    }
+  Future<AppUser> login(String email, String password) async {
+    final normalizedEmail = email.toLowerCase();
+    final isAdmin =
+        normalizedEmail == _adminEmail && password == _adminPassword;
+    final user = AppUser(
+      name: normalizedEmail.split('@').first,
+      email: normalizedEmail,
+      isAdmin: isAdmin,
+    );
+    await _storage.writeBool(_authKey, true);
+    await _storage.writeMap(_userKey, user.toJson());
+    return user;
   }
 
   Future<void> logout() async {
-    final pb = await getPocketbaseInstance();
-    pb.authStore.clear();
+    await _storage.writeBool(_authKey, false);
   }
 
-  Future<User?> getUserFromStore() async {
-    final pb = await getPocketbaseInstance();
-    final model = pb.authStore.record;
-
-    if (model == null) {
-      return null;
-    }
-    return User.fromJson(model.toJson());
+  Future<AppUser> updateProfile(AppUser updatedUser) async {
+    await _storage.writeMap(_userKey, updatedUser.toJson());
+    return updatedUser;
   }
 }
