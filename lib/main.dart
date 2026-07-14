@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'ui/screens.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
   runApp(const TravelApp());
 }
 
@@ -13,13 +16,14 @@ class TravelApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authManager = AuthManager();
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF0088FF),
-      secondary: const Color(0xFFFFB300),
-      surface: Colors.white,
-    ).copyWith(
-      primary: const Color(0xFF0088FF),
-    );
+    final colorScheme =
+        ColorScheme.fromSeed(
+          seedColor: const Color(0xFF0088FF),
+          secondary: const Color(0xFFFFB300),
+          surface: Colors.white,
+        ).copyWith(
+          primary: const Color(0xFF0088FF),
+        );
 
     CustomTransitionPage<void> buildTransitionPage({
       required GoRouterState state,
@@ -29,7 +33,7 @@ class TravelApp extends StatelessWidget {
       var enterBeginX = 0.22;
       var exitEndX = -0.06;
       final extra = state.extra;
-      
+
       if (extra is Map) {
         final fromTab = extra['fromTabIndex'];
         final toTab = extra['toTabIndex'];
@@ -39,7 +43,7 @@ class TravelApp extends StatelessWidget {
           exitEndX = movingRight ? 0.06 : -0.06;
         }
       }
-      
+
       return CustomTransitionPage<void>(
         key: state.pageKey,
         child: child,
@@ -84,7 +88,7 @@ class TravelApp extends StatelessWidget {
         final isAuthScreen = state.matchedLocation == '/auth';
         final isAutoLogin = state.matchedLocation == '/auto-login';
         final isAdminRoute = state.uri.path.startsWith('/manage-tours');
-        
+
         if (!auth.isAuth && !isAuthScreen && !isAutoLogin) {
           return '/auth';
         }
@@ -107,7 +111,7 @@ class TravelApp extends StatelessWidget {
         GoRoute(
           path: '/auth',
           pageBuilder: (context, state) => buildTransitionPage(
-            state: state, 
+            state: state,
             child: const AuthScreen(),
           ),
         ),
@@ -124,7 +128,7 @@ class TravelApp extends StatelessWidget {
         GoRoute(
           path: '/home',
           pageBuilder: (context, state) => buildTransitionPage(
-            state: state, 
+            state: state,
             child: const HomeScreen(),
           ),
         ),
@@ -207,9 +211,9 @@ class TravelApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: authManager),
-        ChangeNotifierProvider(create: (_) => ToursManager()),
         ChangeNotifierProvider(create: (_) => BookingsManager()),
+        ChangeNotifierProvider(create: (_) => ToursManager()),
+        ChangeNotifierProvider.value(value: authManager),
       ],
       child: MaterialApp.router(
         title: 'TravelMate',

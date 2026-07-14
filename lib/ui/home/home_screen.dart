@@ -65,7 +65,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const AboutUsSection(),
-              const WhyChooseUsSection(),
               SectionHeader(
                 title: 'Tour nổi bật',
                 actionLabel: 'Xem tất cả',
@@ -138,6 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                 ),
+              const WhyChooseUsSection(),
               SectionHeader(
                 title: 'Khuyến mãi',
                 actionLabel: 'Xem thêm',

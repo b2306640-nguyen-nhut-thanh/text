@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-
 import '../../models/tour.dart';
 import '../../services/tours_service.dart';
 
@@ -26,9 +25,11 @@ class ToursManager with ChangeNotifier {
   }
 
   Future<void> addTour(Tour tour) async {
-    _items.add(tour);
-    await _toursService.saveTours(_items);
-    notifyListeners();
+    final newTour = await _toursService.addTour(tour);
+    if (newTour != null) {
+      _items.insert(0, newTour);
+      notifyListeners();
+    }
   }
 
   Future<void> updateTour(Tour tour) async {
@@ -36,15 +37,20 @@ class ToursManager with ChangeNotifier {
     if (index < 0) {
       return;
     }
-    _items[index] = tour;
-    await _toursService.saveTours(_items);
-    notifyListeners();
+    
+    final updatedTour = await _toursService.updateTour(tour);
+    if (updatedTour != null) {
+      _items[index] = updatedTour;
+      notifyListeners();
+    }
   }
 
   Future<void> deleteTour(String id) async {
-    _items.removeWhere((tour) => tour.id == id);
-    await _toursService.saveTours(_items);
-    notifyListeners();
+    final success = await _toursService.deleteTour(id);
+    if (success) {
+      _items.removeWhere((tour) => tour.id == id);
+      notifyListeners();
+    }
   }
 
   Future<void> toggleFavorite(String id) async {

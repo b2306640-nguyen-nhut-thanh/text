@@ -64,18 +64,25 @@ class Tour {
     };
   }
 
-  factory Tour.fromJson(Map<String, dynamic> json) {
+factory Tour.fromJson(Map<String, dynamic> json) {
+    List<String> parsedHighlights = [];
+    if (json['highlights'] is List) {
+      parsedHighlights = (json['highlights'] as List)
+          .map((item) => item.toString())
+          .toList();
+    }
+
     return Tour(
-      id: json['id'],
-      title: json['title'],
-      location: json['location'],
-      description: json['description'],
-      imageUrl: json['imageUrl'],
-      price: (json['price'] as num).toDouble(),
-      durationDays: json['durationDays'],
-      rating: (json['rating'] as num).toDouble(),
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? 'Chưa đặt tên',
+      location: json['location']?.toString() ?? 'Chưa rõ địa điểm',
+      description: json['description']?.toString() ?? '',
+      imageUrl: json['imageUrl']?.toString() ?? '',
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      durationDays: (json['durationDays'] as num?)?.toInt() ?? 1,
+      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       isFavorite: json['isFavorite'] ?? false,
-      highlights: List<String>.from(json['highlights'] ?? const []),
+      highlights: parsedHighlights,
     );
   }
 }

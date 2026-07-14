@@ -1,25 +1,96 @@
+import 'package:pocketbase/pocketbase.dart';
 import '../models/tour.dart';
-import 'travel_storage_service.dart';
+import 'pocketbase_client.dart';
 
 class ToursService {
-  static const _storageKey = 'travel_tours';
-  final TravelStorageService _storage = TravelStorageService();
-
   Future<List<Tour>> fetchTours() async {
-    final storedTours = await _storage.readList(_storageKey);
-    if (storedTours.isEmpty) {
-      final seededTours = _seedTours();
-      await saveTours(seededTours);
-      return seededTours;
+    final List<Tour> tours = [];
+    try {
+      final pb = await getPocketbaseInstance();
+      final records = await pb
+          .collection('tours')
+          .getFullList(
+            sort: '-created',
+          );
+
+      if (records.isEmpty) {
+        final seededTours = _seedTours();
+        for (final tour in seededTours) {
+          await addTour(tour);
+        }
+        return seededTours;
+      }
+
+      for (final record in records) {
+        try {
+          tours.add(
+            Tour.fromJson({
+              ...record.toJson(),
+              'id': record.id,
+            }),
+          );
+        } catch (e, stackTrace) {
+          print('❌ Lỗi khi đọc tour ID ${record.id}: $e');
+          print('❌ Chi tiết: $stackTrace');
+        }
+      }
+      return tours;
+    } catch (error, stackTrace) {
+      print('❌ LỖI KẾT NỐI POCKETBASE: $error');
+      print('❌ CHI TIẾT: $stackTrace');
+      return tours;
     }
-    return storedTours.map(Tour.fromJson).toList();
   }
 
-  Future<void> saveTours(List<Tour> tours) async {
-    await _storage.writeList(
-      _storageKey,
-      tours.map((tour) => tour.toJson()).toList(),
-    );
+  Future<Tour?> addTour(Tour tour) async {
+    try {
+      final pb = await getPocketbaseInstance();
+
+      final body = tour.toJson();
+      body.remove('id');
+
+      final record = await pb.collection('tours').create(body: body);
+
+      return Tour.fromJson({
+        ...record.toJson(),
+        'id': record.id,
+      });
+    } catch (error) {
+      print('Error adding tour: $error');
+      return null;
+    }
+  }
+
+  Future<Tour?> updateTour(Tour tour) async {
+    try {
+      final pb = await getPocketbaseInstance();
+
+      final record = await pb
+          .collection('tours')
+          .update(
+            tour.id,
+            body: tour.toJson(),
+          );
+
+      return Tour.fromJson({
+        ...record.toJson(),
+        'id': record.id,
+      });
+    } catch (error) {
+      print('Error updating tour: $error');
+      return null;
+    }
+  }
+
+  Future<bool> deleteTour(String id) async {
+    try {
+      final pb = await getPocketbaseInstance();
+      await pb.collection('tours').delete(id);
+      return true;
+    } catch (error) {
+      print('Error deleting tour: $error');
+      return false;
+    }
   }
 
   List<Tour> _seedTours() {
