@@ -17,15 +17,26 @@ class BookingsManager with ChangeNotifier {
   }
 
   Future<void> addBookings(List<BookingItem> items) async {
-    final newBookings = items.map((item) {
-      return Booking(
+    for (final item in items) {
+      final newBooking = Booking(
         id: DateTime.now().microsecondsSinceEpoch.toString() + item.tourId,
         item: item,
         bookedAt: DateTime.now(),
       );
-    }).toList();
 
-    _bookings.insertAll(0, newBookings);
+      // ---> GỌI SERVICE ĐỂ ĐẨY LÊN POCKETBASE <---
+      final createdBooking = await _bookingsService.addBooking(newBooking);
+
+      if (createdBooking != null) {
+        // Đẩy lên server thành công thì dùng data từ server trả về
+        _bookings.insert(0, createdBooking);
+      } else {
+        // Nếu lỗi mạng thì tạm thời dùng data local
+        _bookings.insert(0, newBooking);
+      }
+    }
+
+    // Vẫn lưu backup vào bộ nhớ máy
     await _bookingsService.saveBookings(_bookings);
     notifyListeners();
   }

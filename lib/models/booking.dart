@@ -35,8 +35,9 @@ class Booking {
     return {
       'id': id,
       'item': item.toJson(),
-      'bookedAt': bookedAt.toIso8601String(),
       'status': status.name,
+      'userEmail': item.userEmail ?? '',
+      'userName': item.userName ?? '',
     };
   }
 

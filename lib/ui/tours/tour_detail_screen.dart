@@ -7,6 +7,7 @@ import '../../models/tour.dart';
 import '../booking/bookings_manager.dart';
 import '../shared/app_header.dart';
 import 'tours_manager.dart';
+import '../auth/auth_manager.dart';
 
 class TourDetailScreen extends StatefulWidget {
   const TourDetailScreen({super.key, required this.tour});
@@ -17,45 +18,57 @@ class TourDetailScreen extends StatefulWidget {
 }
 
 class _TourDetailScreenState extends State<TourDetailScreen> {
-  late DateTime _startDate;
   int _guests = 1;
 
-  @override
-  void initState() {
-    super.initState();
-    _startDate = DateTime.now().add(const Duration(days: 7));
-  }
-
-  Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      firstDate: DateTime.now().add(const Duration(days: 1)),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      initialDate: _startDate,
-    );
-    if (picked != null) {
-      setState(() => _startDate = picked);
-    }
-  }
-
   Future<void> _bookTour(Tour tour) async {
+    // 1. Lấy thông tin user 
+    final authManager = context.read<AuthManager>();
+    final currentUser = authManager.user;
+
+    // Kiểm tra nếu chưa đăng nhập
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng đăng nhập để đặt tour!')),
+      );
+      return;
+    }
+
+    // 2. Kiểm tra an toàn số lượng chỗ trống
+    if (tour.isSoldOut || _guests > tour.remainingSeats) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Số lượng chỗ trống không đủ!')),
+      );
+      return;
+    }
+
+    // 3. Tạo BookingItem có kèm thông tin người đặt
     final item = BookingItem(
       tourId: tour.id,
       title: tour.title,
       location: tour.location,
       imageUrl: tour.imageUrl,
       price: tour.price,
-      startDate: _startDate,
+      startDate: tour.departureDate ?? DateTime.now(),
       guests: _guests,
+      userEmail: currentUser.email,
+      userName: currentUser.name,
     );
-    await context.read<BookingsManager>().addBookings([item]);
-    if (!mounted) return;
 
+    // 4. Lưu booking
+    await context.read<BookingsManager>().addBookings([item]);
+
+    // 5. Cập nhật số lượng khách lên PocketBase
+    final updatedTour = tour.copyWith(
+      bookedGuests: tour.bookedGuests + _guests,
+    );
+    await context.read<ToursManager>().updateTour(updatedTour);
+
+    if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text('Đặt "${tour.title}" thành công!'),
+          content: Text('Đặt "$_guests chỗ" tour "${tour.title}" thành công!'),
           action: SnackBarAction(
             label: 'Xem booking',
             onPressed: () => context.go('/bookings'),
@@ -66,7 +79,11 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final tour = context.watch<ToursManager>().findById(widget.tour.id) ?? widget.tour;
+    // Lắng nghe dữ liệu tour mới nhất từ Provider
+    final tour =
+        context.watch<ToursManager>().findById(widget.tour.id) ?? widget.tour;
+    final remaining = tour.remainingSeats;
+    final isSoldOut = tour.isSoldOut;
 
     return Scaffold(
       appBar: AppHeader(
@@ -74,7 +91,8 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
         actions: [
           IconButton(
             tooltip: 'Yêu thích',
-            onPressed: () => context.read<ToursManager>().toggleFavorite(tour.id),
+            onPressed: () =>
+                context.read<ToursManager>().toggleFavorite(tour.id),
             icon: Icon(
               tour.isFavorite ? Icons.favorite : Icons.favorite_border,
             ),
@@ -85,9 +103,19 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: FilledButton.icon(
-            onPressed: () => _bookTour(tour),
-            icon: const Icon(Icons.confirmation_number),
-            label: const Text('Đặt tour ngay'),
+            // Khóa nút Đặt tour nếu đã hết chỗ
+            onPressed: isSoldOut ? null : () => _bookTour(tour),
+            icon: Icon(
+              isSoldOut ? Icons.event_busy : Icons.confirmation_number,
+            ),
+            label: Text(
+              isSoldOut ? 'TOUR ĐÃ HẾT CHỖ' : 'Đặt tour ngay ($_guests khách)',
+            ),
+            style: FilledButton.styleFrom(
+              backgroundColor: isSoldOut
+                  ? Colors.grey
+                  : Theme.of(context).colorScheme.primary,
+            ),
           ),
         ),
       ),
@@ -142,39 +170,82 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                       .toList(),
                 ),
                 const SizedBox(height: 24),
+
+                // --- THẺ THÔNG TIN ĐẶT CHỖ (ĐÃ NÂNG CẤP) ---
                 Card(
+                  color: isSoldOut ? Colors.red.withOpacity(0.05) : null,
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Column(
                       children: [
+                        // Hiển thị ngày khởi hành cố định
                         ListTile(
-                          leading: const Icon(Icons.calendar_month),
+                          leading: const Icon(
+                            Icons.calendar_month,
+                            color: Colors.blue,
+                          ),
                           title: const Text('Ngày khởi hành'),
                           subtitle: Text(
-                            DateFormat('dd/MM/yyyy').format(_startDate),
+                            tour.departureDate != null
+                                ? DateFormat(
+                                    'dd/MM/yyyy',
+                                  ).format(tour.departureDate!)
+                                : 'Đang cập nhật lịch',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
                           ),
-                          trailing: TextButton(
-                            onPressed: _pickDate,
-                            child: const Text('Đổi ngày'),
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSoldOut ? Colors.red : Colors.green,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              isSoldOut ? 'Hết chỗ' : 'Còn $remaining chỗ',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
                           ),
                         ),
+                        const Divider(height: 1),
+                        // Bộ chọn số lượng khách (giới hạn theo remainingSeats)
                         ListTile(
-                          leading: const Icon(Icons.group),
-                          title: const Text('Số lượng khách'),
+                          leading: const Icon(
+                            Icons.group,
+                            color: Colors.orange,
+                          ),
+                          title: const Text('Số khách đăng ký'),
                           trailing: SizedBox(
-                            width: 132,
+                            width: 140,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 IconButton(
-                                  onPressed: _guests <= 1
+                                  onPressed: (_guests <= 1 || isSoldOut)
                                       ? null
                                       : () => setState(() => _guests--),
                                   icon: const Icon(Icons.remove_circle_outline),
                                 ),
-                                Text('$_guests'),
+                                Text(
+                                  '$_guests',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
                                 IconButton(
-                                  onPressed: () => setState(() => _guests++),
+                                  // Khóa nút (+) khi đạt tối đa số chỗ còn trống
+                                  onPressed: (_guests >= remaining || isSoldOut)
+                                      ? null
+                                      : () => setState(() => _guests++),
                                   icon: const Icon(Icons.add_circle_outline),
                                 ),
                               ],
@@ -185,6 +256,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 20),
               ],
             ),
           ),

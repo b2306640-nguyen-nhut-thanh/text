@@ -6,6 +6,8 @@ class BookingItem {
   final double price;
   final DateTime startDate;
   final int guests;
+  final String? userEmail;
+  final String? userName;
 
   const BookingItem({
     required this.tourId,
@@ -15,6 +17,8 @@ class BookingItem {
     required this.price,
     required this.startDate,
     required this.guests,
+    this.userEmail,
+    this.userName,
   });
 
   double get total => price * guests;
@@ -27,6 +31,8 @@ class BookingItem {
     double? price,
     DateTime? startDate,
     int? guests,
+    String? userEmail,
+    String? userName,
   }) {
     return BookingItem(
       tourId: tourId ?? this.tourId,
@@ -36,6 +42,8 @@ class BookingItem {
       price: price ?? this.price,
       startDate: startDate ?? this.startDate,
       guests: guests ?? this.guests,
+      userEmail: userEmail ?? this.userEmail,
+      userName: userName ?? this.userName,
     );
   }
 
@@ -48,6 +56,9 @@ class BookingItem {
       'price': price,
       'startDate': startDate.toIso8601String(),
       'guests': guests,
+      // ---> Gửi kèm lên JSON/PocketBase <---
+      'userEmail': userEmail ?? '',
+      'userName': userName ?? '',
     };
   }
 
@@ -60,6 +71,9 @@ class BookingItem {
       price: (json['price'] as num).toDouble(),
       startDate: DateTime.parse(json['startDate']),
       guests: json['guests'],
+      // ---> Đọc từ JSON/PocketBase <---
+      userEmail: json['userEmail'],
+      userName: json['userName'],
     );
   }
 }

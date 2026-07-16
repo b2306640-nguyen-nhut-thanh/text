@@ -15,16 +15,13 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
-  
-  // 2. THÊM MỚI: Mặc định mở vào màn hình Đăng nhập
   AuthMode _authMode = AuthMode.login;
 
-  // 3. THÊM MỚI: Các controller cho phần Đăng ký
+  // Bỏ giá trị mặc định cứng để form sạch sẽ
   final _nameController = TextEditingController();
-  final _emailController = TextEditingController(text: 'traveler@example.com');
-  final _passwordController = TextEditingController(text: '12345678');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-
   var _isLoading = false;
 
   @override
@@ -36,42 +33,52 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
-  // 4. THÊM MỚI: Hàm đổi trạng thái giữa Đăng nhập <=> Đăng ký
+  // Tối ưu UX: Clear lỗi và dữ liệu xác nhận khi đổi chế độ Đăng nhập <-> Đăng ký
   void _switchAuthMode() {
     setState(() {
       _authMode = _authMode == AuthMode.login
           ? AuthMode.register
           : AuthMode.login;
+      _confirmPasswordController.clear();
+      if (_authMode == AuthMode.register) {
+        _nameController.clear();
+      }
     });
   }
 
-  // 5. CẬP NHẬT: Xử lý submit cho cả 2 trường hợp
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
     setState(() => _isLoading = true);
-    
-    final authManager = context.read<AuthManager>();
 
+    final authManager = context.read<AuthManager>();
     try {
       if (_authMode == AuthMode.login) {
-        // Đăng nhập
         await authManager.login(
           _emailController.text.trim(),
           _passwordController.text.trim(),
         );
       } else {
-        // Đăng ký
         await authManager.signup(
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
           passwordConfirm: _confirmPasswordController.text.trim(),
         );
+        // Hiển thị thông báo chào mừng khi đăng ký & auto-login thành công
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Chào mừng ${_nameController.text.trim()} đến với TravelMate!',
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       }
     } catch (error) {
-      // 6. THÊM MỚI: Bắt lỗi từ PocketBase hiển thị lên SnackBar
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -208,7 +215,11 @@ class _AuthScreenState extends State<AuthScreen> {
                                           strokeWidth: 2,
                                         ),
                                       )
-                                    : Icon(isLogin ? Icons.login : Icons.person_add),
+                                    : Icon(
+                                        isLogin
+                                            ? Icons.login
+                                            : Icons.person_add,
+                                      ),
                                 label: Text(isLogin ? 'Đăng nhập' : 'Đăng ký'),
                               ),
                             ),

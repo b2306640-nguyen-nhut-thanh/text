@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart'; // THÊM IMPORT NÀY ĐỂ FORMAT NGÀY THÁNG
 import 'package:provider/provider.dart';
 import '../../models/tour.dart';
 import '../shared/app_header.dart';
@@ -22,6 +23,8 @@ class _EditTourScreenState extends State<EditTourScreen> {
   late final TextEditingController _priceController;
   late final TextEditingController _durationController;
   late final TextEditingController _highlightsController;
+  late final TextEditingController _maxGuestsController;
+  DateTime? _selectedDate;
 
   @override
   void initState() {
@@ -29,13 +32,24 @@ class _EditTourScreenState extends State<EditTourScreen> {
     final tour = widget.tour;
     _titleController = TextEditingController(text: tour?.title ?? '');
     _locationController = TextEditingController(text: tour?.location ?? '');
-    _descriptionController = TextEditingController(text: tour?.description ?? '');
+    _descriptionController = TextEditingController(
+      text: tour?.description ?? '',
+    );
     _imageController = TextEditingController(text: tour?.imageUrl ?? '');
-    _priceController = TextEditingController(text: tour?.price.toStringAsFixed(0) ?? '');
-    _durationController = TextEditingController(text: tour?.durationDays.toString() ?? '3');
+    _priceController = TextEditingController(
+      text: tour?.price.toStringAsFixed(0) ?? '',
+    );
+    _durationController = TextEditingController(
+      text: tour?.durationDays.toString() ?? '3',
+    );
     _highlightsController = TextEditingController(
       text: tour?.highlights.join(', ') ?? '',
     );
+    _maxGuestsController = TextEditingController(
+      text: tour?.maxGuests.toString() ?? '20',
+    );
+    _selectedDate =
+        tour?.departureDate ?? DateTime.now().add(const Duration(days: 7));
   }
 
   @override
@@ -47,6 +61,7 @@ class _EditTourScreenState extends State<EditTourScreen> {
     _priceController.dispose();
     _durationController.dispose();
     _highlightsController.dispose();
+    _maxGuestsController.dispose();
     super.dispose();
   }
 
@@ -69,6 +84,9 @@ class _EditTourScreenState extends State<EditTourScreen> {
           .map((item) => item.trim())
           .where((item) => item.isNotEmpty)
           .toList(),
+      departureDate: _selectedDate,
+      maxGuests: int.tryParse(_maxGuestsController.text) ?? 20,
+      bookedGuests: widget.tour?.bookedGuests ?? 0,
     );
     final manager = context.read<ToursManager>();
     if (widget.tour == null) {
@@ -81,11 +99,29 @@ class _EditTourScreenState extends State<EditTourScreen> {
     }
   }
 
+  // ĐÃ SỬA LỖI ĐÓNG NGOẶC HÀM NÀY
+  Future<void> _pickDepartureDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now().add(const Duration(days: 7)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (picked != null) {
+      setState(() => _selectedDate = picked);
+    }
+  } // <--- THÊM DẤU NGOẶC NHỌN ĐÓNG HÀM Ở ĐÂY
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppHeader(title: Text(widget.tour == null ? 'Thêm tour mới' : 'Sửa thông tin tour')),
-      body: Form(         key: _formKey,
+      appBar: AppHeader(
+        title: Text(
+          widget.tour == null ? 'Thêm tour mới' : 'Sửa thông tin tour',
+        ),
+      ),
+      body: Form(
+        key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
@@ -103,7 +139,48 @@ class _EditTourScreenState extends State<EditTourScreen> {
               'Số ngày',
               keyboardType: TextInputType.number,
             ),
-            _field(_highlightsController, 'Điểm nổi bật (cách nhau bằng dấu phẩy)'),
+            
+            // --- ĐÃ BỔ SUNG UI CHỌN NGÀY KHỞI HÀNH ---
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade400),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: ListTile(
+                title: const Text(
+                  'Ngày khởi hành',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                subtitle: Text(
+                  _selectedDate != null
+                      ? DateFormat('dd/MM/yyyy').format(_selectedDate!)
+                      : 'Chưa chọn ngày',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                trailing: OutlinedButton.icon(
+                  onPressed: _pickDepartureDate,
+                  icon: const Icon(Icons.calendar_month, size: 18),
+                  label: const Text('Chọn ngày'),
+                ),
+              ),
+            ),
+
+            // --- ĐÃ BỔ SUNG UI NHẬP SỐ CHỖ TỐI ĐA ---
+            _field(
+              _maxGuestsController,
+              'Số chỗ tối đa (Khách)',
+              keyboardType: TextInputType.number,
+            ),
+
+            _field(
+              _highlightsController,
+              'Điểm nổi bật (cách nhau bằng dấu phẩy)',
+            ),
             const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: _save,

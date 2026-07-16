@@ -10,7 +10,9 @@ class AuthService {
       getPocketbaseInstance().then((pb) {
         pb.authStore.onChange.listen((event) {
           onAuthChange!(
-            event.record == null ? null : AppUser.fromJson(event.record!.toJson()),
+            event.record == null
+                ? null
+                : AppUser.fromJson(event.record!.toJson()),
           );
         });
       });
@@ -25,22 +27,40 @@ class AuthService {
   }) async {
     final pb = await getPocketbaseInstance();
     try {
-      await pb.collection('users').create(
-        body: {
-          'name': name.trim(),
-          'email': email.trim(),
-          'password': password,
-          'passwordConfirm': passwordConfirm,
-          'isAdmin': false,
-        },
-      );
-      
+      await pb
+          .collection('users')
+          .create(
+            body: {
+              'name': name.trim(),
+              'email': email.trim(),
+              'password': password,
+              'passwordConfirm': passwordConfirm,
+              'isAdmin': false,
+            },
+          );
+
       return await login(email, password);
     } catch (error) {
       if (error is ClientException) {
-        throw Exception(error.response['message'] ?? 'Lỗi khi đăng ký tài khoản');
+        final data = error.response['data'] as Map<String, dynamic>?;
+        if (data != null) {
+          if (data.containsKey('email')) {
+            throw Exception('Email này đã được sử dụng hoặc không hợp lệ.');
+          }
+          if (data.containsKey('password')) {
+            throw Exception(
+              'Mật khẩu quá ngắn hoặc không đạt yêu cầu bảo mật.',
+            );
+          }
+          if (data.containsKey('passwordConfirm')) {
+            throw Exception('Mật khẩu xác nhận không trùng khớp.');
+          }
+        }
+        throw Exception(
+          error.response['message'] ?? 'Lỗi khi đăng ký tài khoản.',
+        );
       }
-      throw Exception("Đã xảy ra lỗi hệ thống, vui lòng thử lại!");
+      throw Exception("Xảy ra lỗi kết nối, vui lòng thử lại sau!");
     }
   }
 
@@ -53,7 +73,9 @@ class AuthService {
       return AppUser.fromJson(authRecord.record.toJson());
     } catch (error) {
       if (error is ClientException) {
-        throw Exception(error.response['message'] ?? 'Email hoặc mật khẩu không đúng');
+        throw Exception(
+          error.response['message'] ?? 'Email hoặc mật khẩu không đúng',
+        );
       }
       throw Exception("Đã xảy ra lỗi kết nối!");
     }
@@ -77,14 +99,18 @@ class AuthService {
     final pb = await getPocketbaseInstance();
     try {
       final userId = pb.authStore.record!.id;
-      final record = await pb.collection('users').update(
+      final record = await pb
+          .collection('users')
+          .update(
             userId,
             body: updatedUser.toJson(),
           );
       return AppUser.fromJson(record.toJson());
     } catch (error) {
       if (error is ClientException) {
-        throw Exception(error.response['message'] ?? 'Không thể cập nhật hồ sơ');
+        throw Exception(
+          error.response['message'] ?? 'Không thể cập nhật hồ sơ',
+        );
       }
       throw Exception("Đã xảy ra lỗi khi lưu thông tin");
     }
