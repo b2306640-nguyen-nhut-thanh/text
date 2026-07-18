@@ -8,6 +8,9 @@ class BookingItem {
   final int guests;
   final String? userEmail;
   final String? userName;
+  final String? phone;
+  final String? note;
+  final List<Map<String, String>>? participants;
 
   const BookingItem({
     required this.tourId,
@@ -19,6 +22,9 @@ class BookingItem {
     required this.guests,
     this.userEmail,
     this.userName,
+    this.phone,
+    this.note,
+    this.participants,
   });
 
   double get total => price * guests;
@@ -33,6 +39,9 @@ class BookingItem {
     int? guests,
     String? userEmail,
     String? userName,
+    String? phone,
+    String? note,
+    List<Map<String, String>>? participants,
   }) {
     return BookingItem(
       tourId: tourId ?? this.tourId,
@@ -44,6 +53,9 @@ class BookingItem {
       guests: guests ?? this.guests,
       userEmail: userEmail ?? this.userEmail,
       userName: userName ?? this.userName,
+      phone: phone ?? this.phone,
+      note: note ?? this.note,
+      participants: participants ?? this.participants,
     );
   }
 
@@ -56,9 +68,11 @@ class BookingItem {
       'price': price,
       'startDate': startDate.toIso8601String(),
       'guests': guests,
-      // ---> Gửi kèm lên JSON/PocketBase <---
       'userEmail': userEmail ?? '',
       'userName': userName ?? '',
+      'phone': phone ?? '',
+      'note': note ?? '',
+      'participants': participants ?? [],
     };
   }
 
@@ -71,9 +85,15 @@ class BookingItem {
       price: (json['price'] as num).toDouble(),
       startDate: DateTime.parse(json['startDate']),
       guests: json['guests'],
-      // ---> Đọc từ JSON/PocketBase <---
       userEmail: json['userEmail'],
       userName: json['userName'],
+      phone: json['phone'],
+      note: json['note'],
+      participants: json['participants'] != null 
+          ? List<Map<String, dynamic>>.from(json['participants'])
+              .map((e) => e.map((k, v) => MapEntry(k.toString(), v.toString())))
+              .toList()
+          : null,
     );
   }
 }

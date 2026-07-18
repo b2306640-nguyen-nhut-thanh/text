@@ -16,6 +16,11 @@ class BookingsManager with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> fetchAllBookings() async {
+    _bookings = await _bookingsService.fetchAllBookings();
+    notifyListeners();
+  }
+
   Future<void> addBookings(List<BookingItem> items) async {
     for (final item in items) {
       final newBooking = Booking(
@@ -41,15 +46,60 @@ class BookingsManager with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> requestCancelBooking(String id, String reason) async {
+    final index = _bookings.indexWhere((booking) => booking.id == id);
+    if (index < 0) return;
+
+    final success = await _bookingsService.updateBookingStatus(
+      id, 
+      BookingStatus.cancel_request,
+      cancelReason: reason,
+    );
+    if (success) {
+      _bookings[index] = _bookings[index].copyWith(
+        status: BookingStatus.cancel_request,
+        cancelReason: reason,
+      );
+      await _bookingsService.saveBookings(_bookings);
+      notifyListeners();
+    }
+  }
+
+  Future<void> rejectCancelBooking(String id) async {
+    final index = _bookings.indexWhere((booking) => booking.id == id);
+    if (index < 0) return;
+
+    // Rejecting means going back to confirmed (assuming it was pending or confirmed before)
+    // Actually we'll just set it to confirmed for simplicity.
+    final success = await _bookingsService.updateBookingStatus(id, BookingStatus.confirmed);
+    if (success) {
+      _bookings[index] = _bookings[index].copyWith(status: BookingStatus.confirmed);
+      await _bookingsService.saveBookings(_bookings);
+      notifyListeners();
+    }
+  }
+
   Future<void> cancelBooking(String id) async {
     final index = _bookings.indexWhere((booking) => booking.id == id);
-    if (index < 0) {
-      return;
+    if (index < 0) return;
+
+    final success = await _bookingsService.updateBookingStatus(id, BookingStatus.cancelled);
+    if (success) {
+      _bookings[index] = _bookings[index].copyWith(status: BookingStatus.cancelled);
+      await _bookingsService.saveBookings(_bookings);
+      notifyListeners();
     }
-    _bookings[index] = _bookings[index].copyWith(
-      status: BookingStatus.cancelled,
-    );
-    await _bookingsService.saveBookings(_bookings);
-    notifyListeners();
+  }
+
+  Future<void> confirmBooking(String id) async {
+    final index = _bookings.indexWhere((booking) => booking.id == id);
+    if (index < 0) return;
+
+    final success = await _bookingsService.updateBookingStatus(id, BookingStatus.confirmed);
+    if (success) {
+      _bookings[index] = _bookings[index].copyWith(status: BookingStatus.confirmed);
+      await _bookingsService.saveBookings(_bookings);
+      notifyListeners();
+    }
   }
 }

@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 PocketBase? _pocketbase;
 
+String get baseUrl => dotenv.env['POCKETBASE_URL'] ?? 'http://10.0.2.2:8090';
+
 Future<PocketBase> getPocketbaseInstance() async {
   if (_pocketbase != null) {
     return _pocketbase!;
@@ -15,7 +17,6 @@ Future<PocketBase> getPocketbaseInstance() async {
     initial: prefs.getString('pb_auth'),
   );
   
-  final baseUrl = dotenv.env['POCKETBASE_URL'] ?? 'http://10.0.2.2:8090';
   _pocketbase = PocketBase(baseUrl, authStore: store);
   return _pocketbase!;
 }

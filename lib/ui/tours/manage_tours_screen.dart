@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../shared/app_navigation_bar.dart';
 import '../shared/app_header.dart';
 import 'tours_manager.dart';
 
@@ -35,7 +34,6 @@ class _ManageToursScreenState extends State<ManageToursScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const AppNavigationBar(),
       body: FutureBuilder(
         future: _fetchTours,
         builder: (context, snapshot) {

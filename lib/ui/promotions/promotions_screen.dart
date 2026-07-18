@@ -1,94 +1,119 @@
 import 'package:flutter/material.dart';
-
-import '../shared/app_navigation_bar.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../../services/pocketbase_client.dart';
 import '../shared/app_header.dart';
+import 'promotions_manager.dart';
 
-class PromotionsScreen extends StatelessWidget {
+class PromotionsScreen extends StatefulWidget {
   const PromotionsScreen({super.key});
 
-  static const _promotions = [
-    _Promotion(
-      title: 'Giảm 25% tour hè',
-      subtitle: 'Áp dụng cho nhóm từ 4 khách khi đặt trước 14 ngày.',
-      code: 'SUMMER25',
-      imageUrl:
-          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
-    ),
-    _Promotion(
-      title: 'Combo gia đình',
-      subtitle: 'Miễn phí 1 trẻ em dưới 6 tuổi cho tour nghỉ dưỡng.',
-      code: 'FAMILY',
-      imageUrl:
-          'https://images.unsplash.com/photo-1522199710521-72d69614c702?auto=format&fit=crop&w=1000&q=80',
-    ),
-    _Promotion(
-      title: 'Tặng voucher khách sạn',
-      subtitle: 'Nhận voucher 500.000 đ cho booking từ 8.000.000 đ.',
-      code: 'HOTEL500',
-      imageUrl:
-          'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80',
-    ),
-  ];
+  @override
+  State<PromotionsScreen> createState() => _PromotionsScreenState();
+}
+
+class _PromotionsScreenState extends State<PromotionsScreen> {
+  late Future<void> _fetchPromotions;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPromotions = context.read<PromotionsManager>().fetchPromotions();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const AppHeader(title: Text('Khuyến mãi')),
-      bottomNavigationBar: const AppNavigationBar(),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: _promotions.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 12),
-        itemBuilder: (context, index) {
-          final promotion = _promotions[index];
-          return Card(
-            clipBehavior: Clip.antiAlias,
-            margin: EdgeInsets.zero,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AspectRatio(
-                  aspectRatio: 16 / 7,
-                  child: Image.network(promotion.imageUrl, fit: BoxFit.cover),
+      backgroundColor: const Color(0xFFF5F7FA), // Nền hơi xám nhạt như hình
+      body: FutureBuilder(
+        future: _fetchPromotions,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final promotions = context.watch<PromotionsManager>().availableItems;
+
+          if (promotions.isEmpty) {
+            return const Center(child: Text('Không có khuyến mãi nào.'));
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 100),
+            itemCount: promotions.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final promotion = promotions[index];
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        promotion.title,
-                        style: Theme.of(context).textTheme.titleMedium,
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AspectRatio(
+                      aspectRatio: 16 / 9,
+                      child: Image.network(
+                        promotion.getDisplayImageUrl(baseUrl),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Container(
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.image, size: 50, color: Colors.grey),
+                            ),
                       ),
-                      const SizedBox(height: 6),
-                      Text(promotion.subtitle),
-                      const SizedBox(height: 12),
-                      Chip(
-                        avatar: const Icon(Icons.confirmation_number),
-                        label: Text('Mã: ${promotion.code}'),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            promotion.title,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.calendar_month_outlined,
+                                size: 18,
+                                color: Colors.grey,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                DateFormat('dd/MM/yyyy').format(promotion.endDate),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           );
         },
       ),
     );
   }
-}
-
-class _Promotion {
-  const _Promotion({
-    required this.title,
-    required this.subtitle,
-    required this.code,
-    required this.imageUrl,
-  });
-
-  final String title;
-  final String subtitle;
-  final String code;
-  final String imageUrl;
 }

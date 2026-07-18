@@ -4,7 +4,7 @@ class AppUser {
   final bool isAdmin;
   final String? phone;
   final String? address;
-  final String? dob; // Ngày sinh (ví dụ: dd/MM/yyyy)
+  final String? dob;
   final String? avatarUrl;
 
   const AppUser({

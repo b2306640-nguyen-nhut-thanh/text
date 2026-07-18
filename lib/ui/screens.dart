@@ -10,7 +10,9 @@ export 'profile/profile_screen.dart';
 export 'profile/edit_profile_screen.dart';
 
 export 'promotions/promotions_screen.dart';
-
+export 'promotions/manage_promotions_screen.dart';
+export 'promotions/edit_promotion_screen.dart';
+export 'promotions/promotions_manager.dart';
 export 'splash_screen.dart';
 
 export 'tours/edit_tour_screen.dart';

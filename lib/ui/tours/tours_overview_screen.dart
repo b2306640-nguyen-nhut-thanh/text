@@ -1,9 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../models/tour.dart';
 import '../booking/bookings_manager.dart';
-import '../shared/app_navigation_bar.dart';
 import '../shared/app_header.dart';
 import 'tours_manager.dart';
 
@@ -63,7 +62,6 @@ class _ToursOverviewScreenState extends State<ToursOverviewScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const AppNavigationBar(),
       body: FutureBuilder(
         future: _fetchTours,
         builder: (context, snapshot) {
@@ -73,7 +71,7 @@ class _ToursOverviewScreenState extends State<ToursOverviewScreen> {
           final toursManager = context.watch<ToursManager>();
           final source = _filter == TourFilter.favorites
               ? toursManager.favoriteItems
-              : toursManager.items;
+              : toursManager.availableItems;
           final tours = source.where((tour) {
             final text = '${tour.title} ${tour.location}'.toLowerCase();
             return text.contains(_query.toLowerCase());
@@ -105,7 +103,7 @@ class _ToursOverviewScreenState extends State<ToursOverviewScreen> {
                   )
                 else
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
+                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 90),
                     sliver: SliverLayoutBuilder(
                       builder: (context, constraints) {
                         final width = constraints.crossAxisExtent;
@@ -223,11 +221,14 @@ class TourGridTile extends StatelessWidget {
                         onPressed: () => context
                             .read<ToursManager>()
                             .toggleFavorite(tour.id),
-                        icon: Icon(
-                          tour.isFavorite
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: Theme.of(context).colorScheme.secondary,
+                        icon: Consumer<ToursManager>(
+                          builder: (context, manager, _) {
+                            final isFav = manager.isFavorite(tour.id);
+                            return Icon(
+                              isFav ? Icons.favorite : Icons.favorite_border,
+                              color: Theme.of(context).colorScheme.secondary,
+                            );
+                          },
                         ),
                       ),
                     ],

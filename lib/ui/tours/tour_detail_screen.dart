@@ -1,13 +1,10 @@
-﻿import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../models/booking_item.dart';
 import '../../models/tour.dart';
-import '../booking/bookings_manager.dart';
 import '../shared/app_header.dart';
 import 'tours_manager.dart';
-import '../auth/auth_manager.dart';
+import 'booking_form_screen.dart';
 
 class TourDetailScreen extends StatefulWidget {
   const TourDetailScreen({super.key, required this.tour});
@@ -21,19 +18,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
   int _guests = 1;
 
   Future<void> _bookTour(Tour tour) async {
-    // 1. Lấy thông tin user 
-    final authManager = context.read<AuthManager>();
-    final currentUser = authManager.user;
-
-    // Kiểm tra nếu chưa đăng nhập
-    if (currentUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng đăng nhập để đặt tour!')),
-      );
-      return;
-    }
-
-    // 2. Kiểm tra an toàn số lượng chỗ trống
+    // 1. Kiểm tra an toàn số lượng chỗ trống
     if (tour.isSoldOut || _guests > tour.remainingSeats) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Số lượng chỗ trống không đủ!')),
@@ -41,40 +26,15 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
       return;
     }
 
-    // 3. Tạo BookingItem có kèm thông tin người đặt
-    final item = BookingItem(
-      tourId: tour.id,
-      title: tour.title,
-      location: tour.location,
-      imageUrl: tour.imageUrl,
-      price: tour.price,
-      startDate: tour.departureDate ?? DateTime.now(),
-      guests: _guests,
-      userEmail: currentUser.email,
-      userName: currentUser.name,
-    );
-
-    // 4. Lưu booking
-    await context.read<BookingsManager>().addBookings([item]);
-
-    // 5. Cập nhật số lượng khách lên PocketBase
-    final updatedTour = tour.copyWith(
-      bookedGuests: tour.bookedGuests + _guests,
-    );
-    await context.read<ToursManager>().updateTour(updatedTour);
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text('Đặt "$_guests chỗ" tour "${tour.title}" thành công!'),
-          action: SnackBarAction(
-            label: 'Xem booking',
-            onPressed: () => context.go('/bookings'),
-          ),
+    // 2. Chuyển hướng sang trang BookingFormScreen
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => BookingFormScreen(
+          tour: tour,
+          guests: _guests,
         ),
-      );
+      ),
+    );
   }
 
   @override
@@ -89,13 +49,18 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
       appBar: AppHeader(
         title: Text(tour.location),
         actions: [
-          IconButton(
-            tooltip: 'Yêu thích',
-            onPressed: () =>
-                context.read<ToursManager>().toggleFavorite(tour.id),
-            icon: Icon(
-              tour.isFavorite ? Icons.favorite : Icons.favorite_border,
-            ),
+          Consumer<ToursManager>(
+            builder: (context, manager, _) {
+              final isFav = manager.isFavorite(tour.id);
+              return IconButton(
+                tooltip: 'Yêu thích',
+                onPressed: () => manager.toggleFavorite(tour.id),
+                icon: Icon(
+                  isFav ? Icons.favorite : Icons.favorite_border,
+                  color: isFav ? Colors.red : null,
+                ),
+              );
+            },
           ),
         ],
       ),

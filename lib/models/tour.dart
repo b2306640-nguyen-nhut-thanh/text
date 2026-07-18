@@ -1,3 +1,5 @@
+import 'dart:io';
+
 class Tour {
   final String id;
   final String title;
@@ -7,13 +9,11 @@ class Tour {
   final double price;
   final int durationDays;
   final double rating;
-  final bool isFavorite;
   final List<String> highlights;
-  
-  // --- BỔ SUNG CÁC TRƯỜNG MỚI ---
-  final DateTime? departureDate; 
+  final DateTime? departureDate;
   final int maxGuests;
   final int bookedGuests;
+  final File? imageFile;
 
   const Tour({
     required this.id,
@@ -24,15 +24,13 @@ class Tour {
     required this.price,
     required this.durationDays,
     required this.rating,
-    this.isFavorite = false,
     this.highlights = const [],
-    // --- THÊM VÀO CONSTRUCTOR ---
     this.departureDate,
-    this.maxGuests = 20, // Mặc định 20 chỗ
+    this.maxGuests = 20,
     this.bookedGuests = 0,
+    this.imageFile,
   });
 
-  // Tính số chỗ còn trống
   int get remainingSeats => maxGuests - bookedGuests;
   bool get isSoldOut => remainingSeats <= 0;
 
@@ -45,11 +43,11 @@ class Tour {
     double? price,
     int? durationDays,
     double? rating,
-    bool? isFavorite,
     List<String>? highlights,
     DateTime? departureDate,
     int? maxGuests,
     int? bookedGuests,
+    File? imageFile,
   }) {
     return Tour(
       id: id ?? this.id,
@@ -60,11 +58,11 @@ class Tour {
       price: price ?? this.price,
       durationDays: durationDays ?? this.durationDays,
       rating: rating ?? this.rating,
-      isFavorite: isFavorite ?? this.isFavorite,
       highlights: highlights ?? this.highlights,
       departureDate: departureDate ?? this.departureDate,
       maxGuests: maxGuests ?? this.maxGuests,
       bookedGuests: bookedGuests ?? this.bookedGuests,
+      imageFile: imageFile ?? this.imageFile,
     );
   }
 
@@ -78,7 +76,6 @@ class Tour {
       'price': price,
       'durationDays': durationDays,
       'rating': rating,
-      'isFavorite': isFavorite,
       'highlights': highlights,
       'departureDate': departureDate?.toUtc().toIso8601String(),
       'maxGuests': maxGuests,
@@ -102,7 +99,6 @@ class Tour {
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
       durationDays: (json['durationDays'] as num?)?.toInt() ?? 1,
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-      isFavorite: json['isFavorite'] ?? false,
       highlights: parsedHighlights,
       departureDate: json['departureDate'] != null && json['departureDate'] != ""
           ? DateTime.tryParse(json['departureDate'].toString())?.toLocal()

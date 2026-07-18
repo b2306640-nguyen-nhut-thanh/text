@@ -3,6 +3,13 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'ui/screens.dart';
+import 'ui/shared/app_navigation_bar.dart';
+import 'ui/booking/booking_detail_screen.dart';
+import 'ui/booking/manage_bookings_screen.dart';
+import 'ui/home/admin/manage_destinations_screen.dart';
+import 'ui/home/admin/edit_destination_screen.dart';
+import 'ui/home/destinations_manager.dart';
+import 'models/destination.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -125,22 +132,61 @@ class TravelApp extends StatelessWidget {
             ),
           ),
         ),
-        GoRoute(
-          path: '/home',
-          pageBuilder: (context, state) => buildTransitionPage(
-            state: state,
-            child: const HomeScreen(),
-          ),
-        ),
-        GoRoute(
-          path: '/tours',
-          pageBuilder: (context, state) {
-            final searchQuery = state.uri.queryParameters['query'] ?? '';
-            return buildTransitionPage(
-              state: state,
-              child: ToursOverviewScreen(initialQuery: searchQuery),
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) {
+            return Scaffold(
+              extendBody: true,
+              body: navigationShell,
+              bottomNavigationBar: AppNavigationBar(navigationShell: navigationShell),
             );
           },
+          branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/home',
+                  pageBuilder: (context, state) => const NoTransitionPage(child: HomeScreen()),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/tours',
+                  pageBuilder: (context, state) {
+                    final searchQuery = state.uri.queryParameters['query'] ?? '';
+                    return NoTransitionPage(
+                      child: ToursOverviewScreen(initialQuery: searchQuery),
+                    );
+                  },
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/promotions',
+                  pageBuilder: (context, state) => const NoTransitionPage(child: PromotionsScreen()),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/bookings',
+                  pageBuilder: (context, state) => const NoTransitionPage(child: BookingsScreen()),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/profile',
+                  pageBuilder: (context, state) => const NoTransitionPage(child: ProfileScreen()),
+                ),
+              ],
+            ),
+          ],
         ),
         GoRoute(
           path: '/tours/:tourId',
@@ -154,24 +200,27 @@ class TravelApp extends StatelessWidget {
           },
         ),
         GoRoute(
-          path: '/promotions',
-          pageBuilder: (context, state) => buildTransitionPage(
-            state: state,
-            child: const PromotionsScreen(),
-          ),
-        ),
-        GoRoute(
-          path: '/bookings',
-          pageBuilder: (context, state) => buildTransitionPage(
-            state: state,
-            child: const BookingsScreen(),
-          ),
+          path: '/bookings/:id',
+          pageBuilder: (context, state) {
+            final id = state.pathParameters['id']!;
+            return buildTransitionPage(
+              state: state,
+              child: BookingDetailScreen(bookingId: id),
+            );
+          },
         ),
         GoRoute(
           path: '/manage-tours',
           pageBuilder: (context, state) => buildTransitionPage(
             state: state,
             child: const ManageToursScreen(),
+          ),
+        ),
+        GoRoute(
+          path: '/manage-bookings',
+          pageBuilder: (context, state) => buildTransitionPage(
+            state: state,
+            child: const ManageBookingsScreen(),
           ),
         ),
         GoRoute(
@@ -193,11 +242,21 @@ class TravelApp extends StatelessWidget {
           },
         ),
         GoRoute(
-          path: '/profile',
+          path: '/manage-destinations',
           pageBuilder: (context, state) => buildTransitionPage(
             state: state,
-            child: const ProfileScreen(),
+            child: const ManageDestinationsScreen(),
           ),
+        ),
+        GoRoute(
+          path: '/manage-destinations/edit',
+          pageBuilder: (context, state) {
+            final dest = state.extra as Destination?;
+            return buildTransitionPage(
+              state: state,
+              child: EditDestinationScreen(destination: dest),
+            );
+          },
         ),
         GoRoute(
           path: '/profile/edit',
@@ -206,13 +265,43 @@ class TravelApp extends StatelessWidget {
             child: const EditProfileScreen(),
           ),
         ),
+        GoRoute(
+          path: '/manage-promotions',
+          pageBuilder: (context, state) => buildTransitionPage(
+            state: state,
+            child: const ManagePromotionsScreen(),
+          ),
+        ),
+        GoRoute(
+          path: '/manage-promotions/new',
+          pageBuilder: (context, state) => buildTransitionPage(
+            state: state,
+            child: const EditPromotionScreen(),
+          ),
+        ),
+        GoRoute(
+          path: '/manage-promotions/:id/edit',
+          pageBuilder: (context, state) {
+            final id = state.pathParameters['id']!;
+            final promotion = context.read<PromotionsManager>().items.firstWhere(
+                  (p) => p.id == id,
+                  orElse: () => throw Exception('Promotion not found'),
+                );
+            return buildTransitionPage(
+              state: state,
+              child: EditPromotionScreen(promotion: promotion),
+            );
+          },
+        ),
       ],
     );
 
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => BookingsManager()),
-        ChangeNotifierProvider(create: (_) => ToursManager()),
+        ChangeNotifierProvider(create: (_) => ToursManager()..fetchTours()),
+        ChangeNotifierProvider(create: (_) => PromotionsManager()..fetchPromotions()),
+        ChangeNotifierProvider(create: (_) => DestinationsManager()..fetchDestinations()),
         ChangeNotifierProvider.value(value: authManager),
       ],
       child: MaterialApp.router(

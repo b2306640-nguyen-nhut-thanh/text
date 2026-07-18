@@ -37,14 +37,21 @@ class FeatureGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 2.2,
-      mainAxisSpacing: 16,
-      crossAxisSpacing: 16,
-      children: _features,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = constraints.maxWidth < 350 ? 1 : 2;
+        final spacing = 16.0;
+        final itemWidth = (constraints.maxWidth - spacing * (crossAxisCount - 1)) / crossAxisCount;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: _features.map((feature) => SizedBox(
+            width: itemWidth,
+            child: feature,
+          )).toList(),
+        );
+      },
     );
   }
 }

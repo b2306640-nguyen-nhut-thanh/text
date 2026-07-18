@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../shared/app_navigation_bar.dart';
 import '../shared/app_header.dart';
 import '../tours/tours_manager.dart';
 import 'widgets/banner_slideshow.dart';
@@ -11,6 +10,7 @@ import 'widgets/promotion_preview.dart';
 import '../home/about_us/about_us_section.dart';
 import '../home/why_choose_us/why_choose_us_section.dart';
 import 'widgets/home_search_bar.dart';
+import 'widgets/popular_destinations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,15 +34,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: const AppHeader(title: Text('Travol')),
-      bottomNavigationBar: const AppNavigationBar(),
       body: FutureBuilder(
         future: _fetchTours,
         builder: (context, snapshot) {
-          final tours = context.watch<ToursManager>().items;
+          final tours = context.watch<ToursManager>().availableItems;
           final featuredTours = tours.take(4).toList();
 
           return ListView(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.only(bottom: 90),
             children: [
               SizedBox(
                 height: 270,
@@ -138,6 +137,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               const WhyChooseUsSection(),
+              const SizedBox(height: 24),
+              const PopularDestinations(),
+              const SizedBox(height: 8),
               SectionHeader(
                 title: 'Khuyến mãi',
                 actionLabel: 'Xem thêm',

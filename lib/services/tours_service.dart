@@ -1,4 +1,5 @@
 import 'package:pocketbase/pocketbase.dart';
+import 'package:http/http.dart' as http;
 import '../models/tour.dart';
 import 'pocketbase_client.dart';
 
@@ -48,8 +49,18 @@ class ToursService {
 
       final body = tour.toJson();
       body.remove('id');
+      
+      List<http.MultipartFile> files = [];
+      if (tour.imageFile != null) {
+        files.add(
+          await http.MultipartFile.fromPath('image', tour.imageFile!.path),
+        );
+      }
 
-      final record = await pb.collection('tours').create(body: body);
+      final record = await pb.collection('tours').create(
+        body: body,
+        files: files,
+      );
 
       return Tour.fromJson({
         ...record.toJson(),
@@ -65,12 +76,18 @@ class ToursService {
     try {
       final pb = await getPocketbaseInstance();
 
-      final record = await pb
-          .collection('tours')
-          .update(
-            tour.id,
-            body: tour.toJson(),
-          );
+      List<http.MultipartFile> files = [];
+      if (tour.imageFile != null) {
+        files.add(
+          await http.MultipartFile.fromPath('image', tour.imageFile!.path),
+        );
+      }
+
+      final record = await pb.collection('tours').update(
+        tour.id,
+        body: tour.toJson(),
+        files: files,
+      );
 
       return Tour.fromJson({
         ...record.toJson(),
@@ -106,7 +123,6 @@ class ToursService {
         price: 3490000,
         durationDays: 3,
         rating: 4.8,
-        isFavorite: true,
         highlights: ['Biển Mỹ Khê', 'Hội An', 'Bà Nà Hills'],
       ),
       Tour(
@@ -146,7 +162,6 @@ class ToursService {
         price: 5290000,
         durationDays: 4,
         rating: 4.9,
-        isFavorite: true,
         highlights: ['Lặn san hô', 'Sunset Town', 'Chợ đêm'],
       ),
     ];

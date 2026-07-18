@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../auth/auth_manager.dart';
 import '../booking/bookings_manager.dart';
-import '../shared/app_navigation_bar.dart';
 import '../shared/app_header.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -31,9 +30,8 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: const AppNavigationBar(),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
         children: [
           Center(
             child: CircleAvatar(
@@ -126,7 +124,37 @@ class ProfileScreen extends StatelessWidget {
                 title: const Text('Quản lý danh sách Tour'),
                 subtitle: const Text('Thêm, sửa, xóa các tour du lịch'),
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () => context.go('/manage-tours'),
+                onTap: () => context.push('/manage-tours'),
+              ),
+            ),
+            Card(
+              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+              child: ListTile(
+                leading: const Icon(Icons.local_offer),
+                title: const Text('Quản lý Khuyến mãi'),
+                subtitle: const Text('Thêm, sửa, xóa các khuyến mãi'),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () => context.push('/manage-promotions'),
+              ),
+            ),
+            Card(
+              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+              child: ListTile(
+                leading: const Icon(Icons.event_available),
+                title: const Text('Quản lý Booking'),
+                subtitle: const Text('Xem và xác nhận đơn đặt tour'),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () => context.push('/manage-bookings'),
+              ),
+            ),
+            Card(
+              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+              child: ListTile(
+                leading: const Icon(Icons.place),
+                title: const Text('Quản lý Địa điểm'),
+                subtitle: const Text('Quản lý Điểm đến yêu thích (Home)'),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () => context.push('/manage-destinations'),
               ),
             ),
             const SizedBox(height: 16),

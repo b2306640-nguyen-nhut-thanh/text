@@ -78,7 +78,6 @@ class _EditTourScreenState extends State<EditTourScreen> {
       price: double.parse(_priceController.text),
       durationDays: int.parse(_durationController.text),
       rating: widget.tour?.rating ?? 4.5,
-      isFavorite: widget.tour?.isFavorite ?? false,
       highlights: _highlightsController.text
           .split(',')
           .map((item) => item.trim())
