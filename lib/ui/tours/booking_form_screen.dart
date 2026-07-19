@@ -8,6 +8,7 @@ import '../auth/auth_manager.dart';
 import '../booking/bookings_manager.dart';
 import 'tours_manager.dart';
 import '../../services/pocketbase_client.dart';
+import '../../services/local_notification_service.dart';
 
 
 class BookingFormScreen extends StatefulWidget {
@@ -120,6 +121,13 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
         SnackBar(
           content: Text('Đặt tour "${widget.tour.title}" thành công!'),
         ),
+      );
+      
+      // Kích hoạt thông báo cục bộ
+      await LocalNotificationService.showNotification(
+        id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
+        title: 'Đã đặt tour thành công!',
+        body: 'Tour "${widget.tour.title}" đã được ghi nhận. Vui lòng chờ Admin xác nhận nhé!',
       );
       
       // Điều hướng về trang danh sách booking

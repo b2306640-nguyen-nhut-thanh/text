@@ -5,6 +5,7 @@ import '../../models/booking_item.dart';
 import '../../models/notification.dart';
 import '../../services/bookings_service.dart';
 import '../../services/notifications_service.dart';
+import '../../services/local_notification_service.dart';
 
 class BookingsManager with ChangeNotifier {
   final BookingsService _bookingsService = BookingsService();
@@ -177,6 +178,12 @@ class BookingsManager with ChangeNotifier {
             relatedId: id,
             created: DateTime.now(),
           ));
+          
+          await LocalNotificationService.showNotification(
+            id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
+            title: 'Đã hủy tour',
+            body: 'Tour ${_bookings[index].item.title} đã được hủy thành công.',
+          );
         }
       } else {
         final currentIndex = _bookings.indexWhere((booking) => booking.id == id);
@@ -211,6 +218,12 @@ class BookingsManager with ChangeNotifier {
             relatedId: id,
             created: DateTime.now(),
           ));
+          
+          await LocalNotificationService.showNotification(
+            id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
+            title: 'Xác nhận đặt tour',
+            body: 'Tour ${_bookings[index].item.title} bạn đặt đã được xác nhận thành công!',
+          );
         }
       } else {
         final currentIndex = _bookings.indexWhere((booking) => booking.id == id);

@@ -23,11 +23,14 @@ dependencies:
   sqflite: ^2.3.0
   path: ^1.8.3
   sqflite_common_ffi: ^2.4.2
+  flutter_local_notifications: ^22.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.8
 
 flutter:
   uses-material-design: true

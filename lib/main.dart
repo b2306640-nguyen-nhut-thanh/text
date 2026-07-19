@@ -12,10 +12,17 @@ import 'ui/home/destinations_manager.dart';
 import 'models/destination.dart';
 import 'ui/notifications/notifications_screen.dart';
 import 'ui/notifications/notifications_manager.dart';
+import 'ui/tours/tour_detail_screen.dart';
+import 'ui/tours/tours_manager.dart';
+import 'ui/tours/tours_overview_screen.dart';
+import 'services/local_notification_service.dart';
+import 'services/pocketbase_client.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load();
+  await dotenv.load(fileName: ".env");
+  await LocalNotificationService.init();
+
   runApp(const TravelApp());
 }
 
