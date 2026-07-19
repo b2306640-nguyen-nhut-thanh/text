@@ -75,7 +75,6 @@ class ToursManager with ChangeNotifier {
     final index = _items.indexWhere((tour) => tour.id == id);
     if (index < 0) return;
     
-    final tour = _items[index];
     final bool willBeFavorite = !_favoriteTourIds.contains(id);
 
     // Cập nhật UI ngay lập tức

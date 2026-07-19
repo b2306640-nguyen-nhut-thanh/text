@@ -7,7 +7,6 @@ import '../../models/tour.dart';
 import '../auth/auth_manager.dart';
 import '../booking/bookings_manager.dart';
 import 'tours_manager.dart';
-import '../../services/pocketbase_client.dart';
 import '../../services/local_notification_service.dart';
 
 

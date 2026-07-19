@@ -1,5 +1,5 @@
 name: myshop
-description: 'A new Flutter project.'
+description: ''
 
 publish_to: 'none'
 
@@ -45,3 +45,19 @@ flutter:
     - family: Anton
       fonts:
         - asset: assets/fonts/Anton-Regular.ttf
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  min_sdk_android: 21
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: "assets/images/app_icon.png"
+  android_12:
+    image: "assets/images/app_icon.png"
+    icon_background_color: "#FFFFFF"
+    color: "#FFFFFF"
+  android: true
+  ios: true

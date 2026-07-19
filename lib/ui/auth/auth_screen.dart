@@ -71,7 +71,7 @@ class _AuthScreenState extends State<AuthScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Chào mừng ${_nameController.text.trim()} đến với TravelMate!',
+                'Chào mừng ${_nameController.text.trim()} đến với Travol!',
               ),
               backgroundColor: Colors.green,
             ),

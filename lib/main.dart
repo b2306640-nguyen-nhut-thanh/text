@@ -4,17 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'ui/screens.dart';
 import 'ui/shared/app_navigation_bar.dart';
-import 'ui/booking/booking_detail_screen.dart';
-import 'ui/booking/manage_bookings_screen.dart';
-import 'ui/home/admin/manage_destinations_screen.dart';
-import 'ui/home/admin/edit_destination_screen.dart';
-import 'ui/home/destinations_manager.dart';
 import 'models/destination.dart';
-import 'ui/notifications/notifications_screen.dart';
-import 'ui/notifications/notifications_manager.dart';
-import 'ui/tours/tour_detail_screen.dart';
-import 'ui/tours/tours_manager.dart';
-import 'ui/tours/tours_overview_screen.dart';
 import 'services/local_notification_service.dart';
 import 'services/pocketbase_client.dart';
 
@@ -325,7 +315,7 @@ class TravelApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp.router(
-        title: 'TravelMate',
+        title: 'Travol',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,

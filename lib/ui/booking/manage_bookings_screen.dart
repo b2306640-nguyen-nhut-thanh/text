@@ -44,7 +44,6 @@ class _ManageBookingsScreenState extends State<ManageBookingsScreen> {
             itemBuilder: (context, index) {
               final booking = bookings[index];
               final isCancelled = booking.status == BookingStatus.cancelled;
-              final isConfirmed = booking.status == BookingStatus.confirmed;
               
               return Card(
                 child: InkWell(

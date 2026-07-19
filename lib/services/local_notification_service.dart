@@ -44,8 +44,8 @@ class LocalNotificationService {
     const AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
       'travel_mate_channel',
-      'TravelMate Notifications',
-      channelDescription: 'Thông báo từ ứng dụng TravelMate',
+      'Travol Notifications',
+      channelDescription: 'Thông báo từ ứng dụng Travol',
       importance: Importance.max,
       priority: Priority.high,
       ticker: 'ticker',
