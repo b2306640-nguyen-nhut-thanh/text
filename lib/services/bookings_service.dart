@@ -58,6 +58,10 @@ class BookingsService {
       if (pb.authStore.record != null) {
         body['userId'] = pb.authStore.record!.id;
       }
+      
+      if (body['userId'] == '') {
+        body.remove('userId');
+      }
 
       final record = await pb.collection('bookings').create(body: body);
       

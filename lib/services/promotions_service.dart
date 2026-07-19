@@ -36,11 +36,13 @@ class PromotionsService {
       final pb = await getPocketbaseInstance();
       final body = promotion.toJson();
       body.remove('id');
+      body.remove('imageFile');
+      body.removeWhere((key, value) => value == null);
 
       List<http.MultipartFile> files = [];
       if (imageFile != null) {
         files.add(
-          await http.MultipartFile.fromPath('image', imageFile.path),
+          await http.MultipartFile.fromPath('imageFile', imageFile.path),
         );
       }
 
@@ -63,13 +65,14 @@ class PromotionsService {
     try {
       final pb = await getPocketbaseInstance();
       final body = promotion.toJson();
-      // Loại bỏ imageFile rỗng khỏi body nếu không có file upload
-      // Nhưng toJson đã không có trường 'image' nên an toàn
+      body.remove('id');
+      body.remove('imageFile');
+      body.removeWhere((key, value) => value == null);
 
       List<http.MultipartFile> files = [];
       if (imageFile != null) {
         files.add(
-          await http.MultipartFile.fromPath('image', imageFile.path),
+          await http.MultipartFile.fromPath('imageFile', imageFile.path),
         );
       }
 

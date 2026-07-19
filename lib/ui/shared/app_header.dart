@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../notifications/notifications_manager.dart';
 
 class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   final Widget title;
@@ -16,14 +19,21 @@ class AppHeader extends StatelessWidget implements PreferredSizeWidget {
       title: title,
       actions: [
         if (actions != null) ...actions!,
-        IconButton(
-          tooltip: 'Thông báo',
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Không có thông báo mới')),
+        Consumer<NotificationsManager>(
+          builder: (context, manager, _) {
+            final unreadCount = manager.unreadCount;
+            return IconButton(
+              tooltip: 'Thông báo',
+              onPressed: () {
+                context.push('/notifications');
+              },
+              icon: Badge(
+                isLabelVisible: unreadCount > 0,
+                label: Text(unreadCount > 99 ? '99+' : unreadCount.toString()),
+                child: const Icon(Icons.notifications_none),
+              ),
             );
           },
-          icon: const Icon(Icons.notifications_none),
         ),
       ],
     );

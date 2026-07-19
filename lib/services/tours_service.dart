@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:convert';
 import 'package:pocketbase/pocketbase.dart';
 import 'package:http/http.dart' as http;
 import '../models/tour.dart';
@@ -43,17 +45,22 @@ class ToursService {
     }
   }
 
-  Future<Tour?> addTour(Tour tour) async {
+  Future<Tour?> addTour(Tour tour, {File? imageFile}) async {
     try {
       final pb = await getPocketbaseInstance();
 
       final body = tour.toJson();
       body.remove('id');
+      body.remove('imageFile');
+      body.removeWhere((key, value) => value == null);
+      if (body['highlights'] != null) {
+        body['highlights'] = jsonEncode(body['highlights']);
+      }
       
       List<http.MultipartFile> files = [];
-      if (tour.imageFile != null) {
+      if (imageFile != null) {
         files.add(
-          await http.MultipartFile.fromPath('image', tour.imageFile!.path),
+          await http.MultipartFile.fromPath('imageFile', imageFile.path),
         );
       }
 
@@ -72,20 +79,26 @@ class ToursService {
     }
   }
 
-  Future<Tour?> updateTour(Tour tour) async {
+  Future<Tour?> updateTour(Tour tour, {File? imageFile}) async {
     try {
       final pb = await getPocketbaseInstance();
+      final body = tour.toJson();
+      body.remove('imageFile');
+      body.removeWhere((key, value) => value == null);
+      if (body['highlights'] != null) {
+        body['highlights'] = jsonEncode(body['highlights']);
+      }
 
       List<http.MultipartFile> files = [];
-      if (tour.imageFile != null) {
+      if (imageFile != null) {
         files.add(
-          await http.MultipartFile.fromPath('image', tour.imageFile!.path),
+          await http.MultipartFile.fromPath('imageFile', imageFile.path),
         );
       }
 
       final record = await pb.collection('tours').update(
         tour.id,
-        body: tour.toJson(),
+        body: body,
         files: files,
       );
 
@@ -118,7 +131,7 @@ class ToursService {
         location: 'Da Nang',
         description:
             'Khám phá biển Mỹ Khê, bán đảo Sơn Trà, Hội An về đêm và ẩm thực miền Trung trong lịch trình cân bằng giữa nghỉ dưỡng và trải nghiệm.',
-        imageUrl:
+        imageFile:
             'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1200&q=80',
         price: 3490000,
         durationDays: 3,
@@ -131,7 +144,7 @@ class ToursService {
         location: 'Quang Ninh',
         description:
             'Du thuyền trên vịnh Hạ Long, chèo kayak, thăm hang động và dùng bữa tối hải sản trên tàu.',
-        imageUrl:
+        imageFile:
             'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80',
         price: 4290000,
         durationDays: 2,
@@ -144,7 +157,7 @@ class ToursService {
         location: 'Lao Cai',
         description:
             'Trekking bản Cát Cát, săn mây Fansipan, thưởng thức đặc sản Tây Bắc và nghỉ tại homestay địa phương.',
-        imageUrl:
+        imageFile:
             'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
         price: 3890000,
         durationDays: 3,
@@ -157,7 +170,7 @@ class ToursService {
         location: 'Kien Giang',
         description:
             'Nghỉ dưỡng tại đảo ngọc, lặn ngắm san hô, ngắm hoàng hôn Sunset Town và khám phá chợ đêm.',
-        imageUrl:
+        imageFile:
             'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
         price: 5290000,
         durationDays: 4,

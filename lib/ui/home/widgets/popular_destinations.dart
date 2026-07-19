@@ -37,11 +37,9 @@ class PopularDestinations extends StatelessWidget {
                   isScrollable: true,
                   indicator: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
-                    color: Colors.white,
-                    border: Border.all(
-                        color: Theme.of(context).colorScheme.primary),
+                    color: Theme.of(context).colorScheme.primary,
                   ),
-                  labelColor: Theme.of(context).colorScheme.primary,
+                  labelColor: Colors.white,
                   unselectedLabelColor: Colors.grey.shade600,
                   indicatorSize: TabBarIndicatorSize.tab,
                   dividerColor: Colors.transparent,

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../../models/tour.dart';
 import '../../services/tours_service.dart';
@@ -41,21 +42,21 @@ class ToursManager with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addTour(Tour tour) async {
-    final newTour = await _toursService.addTour(tour);
+  Future<void> addTour(Tour tour, {File? imageFile}) async {
+    final newTour = await _toursService.addTour(tour, imageFile: imageFile);
     if (newTour != null) {
       _items.insert(0, newTour);
       notifyListeners();
     }
   }
 
-  Future<void> updateTour(Tour tour) async {
+  Future<void> updateTour(Tour tour, {File? imageFile}) async {
     final index = _items.indexWhere((item) => item.id == tour.id);
     if (index < 0) {
       return;
     }
     
-    final updatedTour = await _toursService.updateTour(tour);
+    final updatedTour = await _toursService.updateTour(tour, imageFile: imageFile);
     if (updatedTour != null) {
       _items[index] = updatedTour;
       notifyListeners();

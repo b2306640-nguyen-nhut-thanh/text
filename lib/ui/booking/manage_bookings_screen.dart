@@ -6,6 +6,8 @@ import '../../models/booking.dart';
 import '../shared/app_header.dart';
 import 'bookings_manager.dart';
 import 'package:go_router/go_router.dart';
+import '../../services/pocketbase_client.dart';
+
 
 class ManageBookingsScreen extends StatefulWidget {
   const ManageBookingsScreen({super.key});
@@ -55,7 +57,7 @@ class _ManageBookingsScreenState extends State<ManageBookingsScreen> {
                       children: [
                         ListTile(
                           leading: CircleAvatar(
-                            backgroundImage: NetworkImage(booking.item.imageUrl),
+                            backgroundImage: NetworkImage(booking.item.getDisplayImageUrl(baseUrl)),
                             onBackgroundImageError: (e, s) {},
                           ),
                           title: Text(booking.item.title, maxLines: 2, overflow: TextOverflow.ellipsis),

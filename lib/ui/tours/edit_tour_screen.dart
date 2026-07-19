@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart'; // THÊM IMPORT NÀY ĐỂ FORMAT NGÀY THÁNG
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../models/tour.dart';
+import '../../services/pocketbase_client.dart';
 import '../shared/app_header.dart';
 import 'tours_manager.dart';
 
@@ -19,12 +22,15 @@ class _EditTourScreenState extends State<EditTourScreen> {
   late final TextEditingController _titleController;
   late final TextEditingController _locationController;
   late final TextEditingController _descriptionController;
-  late final TextEditingController _imageController;
+  late final TextEditingController _imageUrlController;
   late final TextEditingController _priceController;
   late final TextEditingController _durationController;
   late final TextEditingController _highlightsController;
   late final TextEditingController _maxGuestsController;
   DateTime? _selectedDate;
+  
+  File? _pickedImage;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -35,7 +41,7 @@ class _EditTourScreenState extends State<EditTourScreen> {
     _descriptionController = TextEditingController(
       text: tour?.description ?? '',
     );
-    _imageController = TextEditingController(text: tour?.imageUrl ?? '');
+    _imageUrlController = TextEditingController(text: tour?.imageFile ?? '');
     _priceController = TextEditingController(
       text: tour?.price.toStringAsFixed(0) ?? '',
     );
@@ -57,7 +63,7 @@ class _EditTourScreenState extends State<EditTourScreen> {
     _titleController.dispose();
     _locationController.dispose();
     _descriptionController.dispose();
-    _imageController.dispose();
+    _imageUrlController.dispose();
     _priceController.dispose();
     _durationController.dispose();
     _highlightsController.dispose();
@@ -74,7 +80,7 @@ class _EditTourScreenState extends State<EditTourScreen> {
       title: _titleController.text.trim(),
       location: _locationController.text.trim(),
       description: _descriptionController.text.trim(),
-      imageUrl: _imageController.text.trim(),
+      imageFile: widget.tour?.imageFile ?? '',
       price: double.parse(_priceController.text),
       durationDays: int.parse(_durationController.text),
       rating: widget.tour?.rating ?? 4.5,
@@ -88,13 +94,25 @@ class _EditTourScreenState extends State<EditTourScreen> {
       bookedGuests: widget.tour?.bookedGuests ?? 0,
     );
     final manager = context.read<ToursManager>();
-    if (widget.tour == null) {
-      await manager.addTour(tour);
-    } else {
-      await manager.updateTour(tour);
-    }
-    if (mounted) {
-      context.pop();
+    
+    setState(() => _isLoading = true);
+    try {
+      if (widget.tour == null) {
+        await manager.addTour(tour, imageFile: _pickedImage);
+      } else {
+        await manager.updateTour(tour, imageFile: _pickedImage);
+      }
+      if (mounted) {
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Có lỗi xảy ra khi lưu.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -109,7 +127,18 @@ class _EditTourScreenState extends State<EditTourScreen> {
     if (picked != null) {
       setState(() => _selectedDate = picked);
     }
-  } // <--- THÊM DẤU NGOẶC NHỌN ĐÓNG HÀM Ở ĐÂY
+  } 
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _pickedImage = File(pickedFile.path);
+        _imageUrlController.clear();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +147,18 @@ class _EditTourScreenState extends State<EditTourScreen> {
         title: Text(
           widget.tour == null ? 'Thêm tour mới' : 'Sửa thông tin tour',
         ),
+        actions: [
+          IconButton(
+            onPressed: _isLoading ? null : _save,
+            icon: _isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.check),
+          ),
+        ],
       ),
       body: Form(
         key: _formKey,
@@ -127,7 +168,32 @@ class _EditTourScreenState extends State<EditTourScreen> {
             _field(_titleController, 'Tên tour'),
             _field(_locationController, 'Điểm đến'),
             _field(_descriptionController, 'Mô tả chi tiết', maxLines: 4),
-            _field(_imageController, 'URL hình ảnh'),
+            
+            const Text('Hình ảnh tour', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _pickImage,
+                    icon: const Icon(Icons.photo_library),
+                    label: const Text('Chọn ảnh từ máy'),
+                  ),
+                ),
+                if (_pickedImage != null)
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => setState(() => _pickedImage = null),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // Preview image
+            if (_pickedImage != null)
+              Image.file(_pickedImage!, height: 200, fit: BoxFit.cover)
+            else if (widget.tour != null && widget.tour!.getDisplayImageUrl(baseUrl).isNotEmpty)
+              Image.network(widget.tour!.getDisplayImageUrl(baseUrl), height: 200, fit: BoxFit.cover),
+            const SizedBox(height: 16),
             _field(
               _priceController,
               'Giá (VNĐ / Khách)',
@@ -186,6 +252,7 @@ class _EditTourScreenState extends State<EditTourScreen> {
               icon: const Icon(Icons.save),
               label: const Text('Lưu tour'),
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),

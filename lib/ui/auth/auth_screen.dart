@@ -119,7 +119,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   const SizedBox(height: 12),
                   Text(
                     // Đổi tiêu đề động theo chế độ
-                    isLogin ? 'Đăng Nhập TravelMate' : 'Tạo Tài Khoản Mới',
+                    isLogin ? 'Đăng Nhập Travol' : 'Tạo Tài Khoản Mới',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
@@ -131,7 +131,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         key: _formKey,
                         child: Column(
                           children: [
-                            // --- TRƯỜNG HỌ VÀ TÊN (Chỉ hiện khi Đăng ký) ---
+                            // --- PHẦN 1: TRƯỜNG HỌ VÀ TÊN (Chỉ hiện khi Đăng ký) ---
                             if (!isLogin) ...[
                               TextFormField(
                                 controller: _nameController,
@@ -149,7 +149,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               const SizedBox(height: 12),
                             ],
 
-                            // --- TRƯỜNG EMAIL ---
+                            // --- PHẦN 2: TRƯỜNG EMAIL ---
                             TextFormField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
@@ -166,7 +166,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             ),
                             const SizedBox(height: 12),
 
-                            // --- TRƯỜNG MẬT KHẨU ---
+                            // --- PHẦN 3: TRƯỜNG MẬT KHẨU ---
                             TextFormField(
                               controller: _passwordController,
                               obscureText: true,
@@ -183,7 +183,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               },
                             ),
 
-                            // --- TRƯỜNG XÁC NHẬN MẬT KHẨU (Chỉ hiện khi Đăng ký) ---
+                            // --- PHẦN 4: TRƯỜNG XÁC NHẬN MẬT KHẨU (Chỉ hiện khi Đăng ký) ---
                             if (!isLogin) ...[
                               const SizedBox(height: 12),
                               TextFormField(
@@ -203,7 +203,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             ],
                             const SizedBox(height: 20),
 
-                            // --- NÚT SUBMIT (Đăng nhập / Đăng ký) ---
+                            // --- PHẦN 5: NÚT ĐĂNG NHẬP / ĐĂNG KÝ ---
                             SizedBox(
                               width: double.infinity,
                               child: FilledButton.icon(
@@ -225,7 +225,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             ),
                             const SizedBox(height: 12),
 
-                            // --- NÚT CHUYỂN ĐỔI CHẾ ĐỘ ---
+                            // --- PHẦN 6: NÚT CHUYỂN ĐỔI CHẾ ĐỘ ---
                             TextButton(
                               onPressed: _isLoading ? null : _switchAuthMode,
                               child: Text(

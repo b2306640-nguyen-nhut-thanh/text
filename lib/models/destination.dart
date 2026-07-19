@@ -12,10 +12,13 @@ class Destination {
   });
 
   String getDisplayImageUrl(String pocketBaseUrl) {
-    if (imageFile.isNotEmpty && pocketBaseUrl.isNotEmpty) {
-      return '$pocketBaseUrl/api/files/destinations/$id/$imageFile';
+    if (imageFile.isNotEmpty) {
+      if (imageFile.startsWith('http')) return imageFile;
+      if (pocketBaseUrl.isNotEmpty) {
+        return '$pocketBaseUrl/api/files/destinations/$id/$imageFile';
+      }
     }
-    return ''; // Placeholder or empty if no image
+    return 'https://placehold.co/600x400/e0e0e0/808080.png?text=No+Image';
   }
 
   factory Destination.fromJson(Map<String, dynamic> json) {

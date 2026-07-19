@@ -11,6 +11,8 @@ import '../home/about_us/about_us_section.dart';
 import '../home/why_choose_us/why_choose_us_section.dart';
 import 'widgets/home_search_bar.dart';
 import 'widgets/popular_destinations.dart';
+import '../../services/pocketbase_client.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -43,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return ListView(
             padding: const EdgeInsets.only(bottom: 90),
             children: [
+              // --- PHẦN 1: BANNER & THANH TÌM KIẾM ---
               SizedBox(
                 height: 270,
                 child: Stack(
@@ -63,7 +66,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
+
+              // --- PHẦN 2: GIỚI THIỆU (ABOUT US) ---
               const AboutUsSection(),
+              // --- PHẦN 3: TOUR NỔI BẬT ---
               SectionHeader(
                 title: 'Tour nổi bật',
                 actionLabel: 'Xem tất cả',
@@ -96,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 Expanded(
                                   child: Image.network(
-                                    tour.imageUrl,
+                                    tour.getDisplayImageUrl(baseUrl),
                                     width: double.infinity,
                                     fit: BoxFit.cover,
                                   ),
@@ -136,10 +142,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                 ),
+              // --- PHẦN 4: TẠI SAO CHỌN CHÚNG TÔI ---
               const WhyChooseUsSection(),
               const SizedBox(height: 24),
+              // --- PHẦN 5: ĐIỂM ĐẾN PHỔ BIẾN ---
               const PopularDestinations(),
               const SizedBox(height: 8),
+              // --- PHẦN 6: KHUYẾN MÃI ---
               SectionHeader(
                 title: 'Khuyến mãi',
                 actionLabel: 'Xem thêm',

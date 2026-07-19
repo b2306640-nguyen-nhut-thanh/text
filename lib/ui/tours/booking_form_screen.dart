@@ -7,6 +7,8 @@ import '../../models/tour.dart';
 import '../auth/auth_manager.dart';
 import '../booking/bookings_manager.dart';
 import 'tours_manager.dart';
+import '../../services/pocketbase_client.dart';
+
 
 class BookingFormScreen extends StatefulWidget {
   final Tour tour;
@@ -88,7 +90,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
         tourId: widget.tour.id,
         title: widget.tour.title,
         location: widget.tour.location,
-        imageUrl: widget.tour.imageUrl,
+        imageFile: widget.tour.imageFile,
         price: widget.tour.price,
         startDate: widget.tour.departureDate ?? DateTime.now(),
         guests: widget.guests,

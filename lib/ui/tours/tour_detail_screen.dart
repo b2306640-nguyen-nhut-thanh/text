@@ -5,6 +5,8 @@ import '../../models/tour.dart';
 import '../shared/app_header.dart';
 import 'tours_manager.dart';
 import 'booking_form_screen.dart';
+import '../../services/pocketbase_client.dart';
+
 
 class TourDetailScreen extends StatefulWidget {
   const TourDetailScreen({super.key, required this.tour});
@@ -46,6 +48,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
     final isSoldOut = tour.isSoldOut;
 
     return Scaffold(
+      // --- PHẦN 1: HEADER (TIÊU ĐỀ & YÊU THÍCH) ---
       appBar: AppHeader(
         title: Text(tour.location),
         actions: [
@@ -64,6 +67,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
           ),
         ],
       ),
+      // --- PHẦN 2: THANH BOTTOM (NÚT ĐẶT TOUR) ---
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -86,15 +90,17 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
       ),
       body: ListView(
         children: [
+          // --- PHẦN 3: HÌNH ẢNH TOUR ---
           AspectRatio(
             aspectRatio: 16 / 9,
-            child: Image.network(tour.imageUrl, fit: BoxFit.cover),
+            child: Image.network(tour.getDisplayImageUrl(baseUrl), fit: BoxFit.cover),
           ),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // --- PHẦN 4: THÔNG TIN CHI TIẾT (TÊN, ĐỊA ĐIỂM, GIÁ, MÔ TẢ) ---
                 Text(
                   tour.title,
                   style: Theme.of(context).textTheme.headlineSmall,
@@ -136,7 +142,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // --- THẺ THÔNG TIN ĐẶT CHỖ (ĐÃ NÂNG CẤP) ---
+                // --- PHẦN 5: THẺ THÔNG TIN ĐẶT CHỖ (ĐÃ NÂNG CẤP) ---
                 Card(
                   color: isSoldOut ? Colors.red.withOpacity(0.05) : null,
                   child: Padding(

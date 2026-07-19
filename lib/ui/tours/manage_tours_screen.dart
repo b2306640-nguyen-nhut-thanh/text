@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import '../shared/app_header.dart';
 import 'tours_manager.dart';
+import '../../services/pocketbase_client.dart';
+
 
 class ManageToursScreen extends StatefulWidget {
   const ManageToursScreen({super.key});
@@ -48,7 +50,7 @@ class _ManageToursScreenState extends State<ManageToursScreen> {
               final tour = tours[index];
               return ListTile(
                 leading: CircleAvatar(
-                  backgroundImage: NetworkImage(tour.imageUrl),
+                  backgroundImage: NetworkImage(tour.getDisplayImageUrl(baseUrl)),
                 ),
                 title: Text(tour.title),
                 subtitle: Text(tour.location),

@@ -2,7 +2,7 @@ class BookingItem {
   final String tourId;
   final String title;
   final String location;
-  final String imageUrl;
+  final String imageFile;
   final double price;
   final DateTime startDate;
   final int guests;
@@ -16,7 +16,7 @@ class BookingItem {
     required this.tourId,
     required this.title,
     required this.location,
-    required this.imageUrl,
+    required this.imageFile,
     required this.price,
     required this.startDate,
     required this.guests,
@@ -29,11 +29,21 @@ class BookingItem {
 
   double get total => price * guests;
 
+  String getDisplayImageUrl(String pocketBaseUrl) {
+    if (imageFile.isNotEmpty) {
+      if (imageFile.startsWith('http')) return imageFile;
+      if (pocketBaseUrl.isNotEmpty) {
+        return '$pocketBaseUrl/api/files/tours/$tourId/$imageFile';
+      }
+    }
+    return 'https://placehold.co/600x400/e0e0e0/808080.png?text=No+Image';
+  }
+
   BookingItem copyWith({
     String? tourId,
     String? title,
     String? location,
-    String? imageUrl,
+    String? imageFile,
     double? price,
     DateTime? startDate,
     int? guests,
@@ -47,7 +57,7 @@ class BookingItem {
       tourId: tourId ?? this.tourId,
       title: title ?? this.title,
       location: location ?? this.location,
-      imageUrl: imageUrl ?? this.imageUrl,
+      imageFile: imageFile ?? this.imageFile,
       price: price ?? this.price,
       startDate: startDate ?? this.startDate,
       guests: guests ?? this.guests,
@@ -64,7 +74,7 @@ class BookingItem {
       'tourId': tourId,
       'title': title,
       'location': location,
-      'imageUrl': imageUrl,
+      'imageFile': imageFile,
       'price': price,
       'startDate': startDate.toIso8601String(),
       'guests': guests,
@@ -81,7 +91,7 @@ class BookingItem {
       tourId: json['tourId'],
       title: json['title'],
       location: json['location'],
-      imageUrl: json['imageUrl'],
+      imageFile: json['imageFile'] ?? json['imageUrl'] ?? '',
       price: (json['price'] as num).toDouble(),
       startDate: DateTime.parse(json['startDate']),
       guests: json['guests'],

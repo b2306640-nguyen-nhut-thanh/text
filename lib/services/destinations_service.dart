@@ -20,7 +20,6 @@ class DestinationsService {
     });
   }
 
-  // Lấy dữ liệu (Thử lấy từ PB trước, nếu lỗi thì lấy từ SQLite)
   Future<List<Destination>> fetchDestinations() async {
     try {
       final pb = await getPocketbaseInstance();
@@ -58,7 +57,7 @@ class DestinationsService {
         files: imageFile != null
             ? [
                 http.MultipartFile.fromBytes(
-                  'image',
+                  'imageFile',
                   await imageFile.readAsBytes(),
                   filename: path.basename(imageFile.path),
                 )
@@ -97,7 +96,7 @@ class DestinationsService {
         files: imageFile != null
             ? [
                 http.MultipartFile.fromBytes(
-                  'image',
+                  'imageFile',
                   await imageFile.readAsBytes(),
                   filename: imageFile.path.split('/').last,
                 )

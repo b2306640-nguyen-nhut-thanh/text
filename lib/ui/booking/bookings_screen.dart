@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import '../../models/booking.dart';
 import '../shared/app_header.dart';
 import 'bookings_manager.dart';
+import '../../services/pocketbase_client.dart';
+
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
@@ -65,7 +67,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
               return Card(
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundImage: NetworkImage(booking.item.imageUrl),
+                    backgroundImage: NetworkImage(booking.item.getDisplayImageUrl(baseUrl)),
                   ),
                   title: Text(booking.item.title),
                   subtitle: Text(

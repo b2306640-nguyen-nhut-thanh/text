@@ -10,6 +10,8 @@ import 'ui/home/admin/manage_destinations_screen.dart';
 import 'ui/home/admin/edit_destination_screen.dart';
 import 'ui/home/destinations_manager.dart';
 import 'models/destination.dart';
+import 'ui/notifications/notifications_screen.dart';
+import 'ui/notifications/notifications_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -293,6 +295,13 @@ class TravelApp extends StatelessWidget {
             );
           },
         ),
+        GoRoute(
+          path: '/notifications',
+          pageBuilder: (context, state) => buildTransitionPage(
+            state: state,
+            child: const NotificationsScreen(),
+          ),
+        ),
       ],
     );
 
@@ -303,6 +312,10 @@ class TravelApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PromotionsManager()..fetchPromotions()),
         ChangeNotifierProvider(create: (_) => DestinationsManager()..fetchDestinations()),
         ChangeNotifierProvider.value(value: authManager),
+        ChangeNotifierProxyProvider<AuthManager, NotificationsManager>(
+          create: (ctx) => NotificationsManager(ctx.read<AuthManager>()),
+          update: (ctx, auth, previous) => previous ?? NotificationsManager(auth),
+        ),
       ],
       child: MaterialApp.router(
         title: 'TravelMate',

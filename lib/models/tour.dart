@@ -5,7 +5,7 @@ class Tour {
   final String title;
   final String location;
   final String description;
-  final String imageUrl;
+  final String imageFile;
   final double price;
   final int durationDays;
   final double rating;
@@ -13,14 +13,13 @@ class Tour {
   final DateTime? departureDate;
   final int maxGuests;
   final int bookedGuests;
-  final File? imageFile;
 
   const Tour({
     required this.id,
     required this.title,
     required this.location,
     required this.description,
-    required this.imageUrl,
+    required this.imageFile,
     required this.price,
     required this.durationDays,
     required this.rating,
@@ -28,18 +27,27 @@ class Tour {
     this.departureDate,
     this.maxGuests = 20,
     this.bookedGuests = 0,
-    this.imageFile,
   });
 
   int get remainingSeats => maxGuests - bookedGuests;
   bool get isSoldOut => remainingSeats <= 0;
+
+  String getDisplayImageUrl(String pocketBaseUrl) {
+    if (imageFile.isNotEmpty) {
+      if (imageFile.startsWith('http')) return imageFile;
+      if (pocketBaseUrl.isNotEmpty) {
+        return '$pocketBaseUrl/api/files/tours/$id/$imageFile';
+      }
+    }
+    return 'https://placehold.co/600x400/e0e0e0/808080.png?text=No+Image';
+  }
 
   Tour copyWith({
     String? id,
     String? title,
     String? location,
     String? description,
-    String? imageUrl,
+    String? imageFile,
     double? price,
     int? durationDays,
     double? rating,
@@ -47,14 +55,13 @@ class Tour {
     DateTime? departureDate,
     int? maxGuests,
     int? bookedGuests,
-    File? imageFile,
   }) {
     return Tour(
       id: id ?? this.id,
       title: title ?? this.title,
       location: location ?? this.location,
       description: description ?? this.description,
-      imageUrl: imageUrl ?? this.imageUrl,
+      imageFile: imageFile ?? this.imageFile,
       price: price ?? this.price,
       durationDays: durationDays ?? this.durationDays,
       rating: rating ?? this.rating,
@@ -62,7 +69,6 @@ class Tour {
       departureDate: departureDate ?? this.departureDate,
       maxGuests: maxGuests ?? this.maxGuests,
       bookedGuests: bookedGuests ?? this.bookedGuests,
-      imageFile: imageFile ?? this.imageFile,
     );
   }
 
@@ -72,7 +78,7 @@ class Tour {
       'title': title,
       'location': location,
       'description': description,
-      'imageUrl': imageUrl,
+      'imageFile': imageFile,
       'price': price,
       'durationDays': durationDays,
       'rating': rating,
@@ -95,7 +101,7 @@ class Tour {
       title: json['title']?.toString() ?? 'Chưa có tên',
       location: json['location']?.toString() ?? 'Chưa có địa điểm',
       description: json['description']?.toString() ?? '',
-      imageUrl: json['imageUrl']?.toString() ?? '',
+      imageFile: json['image']?.toString() ?? json['imageUrl']?.toString() ?? json['imageFile']?.toString() ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
       durationDays: (json['durationDays'] as num?)?.toInt() ?? 1,
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,

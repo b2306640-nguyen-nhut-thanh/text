@@ -46,6 +46,9 @@ class _ManageDestinationsScreenState extends State<ManageDestinationsScreen> {
               title: const Text('Quản lý Địa điểm'),
               bottom: TabBar(
                 isScrollable: true,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white70,
+                indicatorColor: Colors.white,
                 tabs: regions.isEmpty
                     ? [const Tab(text: 'Tất cả')]
                     : regions.map((r) => Tab(text: r)).toList(),

@@ -8,6 +8,7 @@ class Booking {
   final DateTime bookedAt;
   final BookingStatus status;
   final String? cancelReason;
+  final String? userId;
 
   const Booking({
     required this.id,
@@ -15,6 +16,7 @@ class Booking {
     required this.bookedAt,
     this.status = BookingStatus.pending,
     this.cancelReason,
+    this.userId,
   });
 
   double get amount => item.total;
@@ -25,6 +27,7 @@ class Booking {
     DateTime? bookedAt,
     BookingStatus? status,
     String? cancelReason,
+    String? userId,
   }) {
     return Booking(
       id: id ?? this.id,
@@ -32,6 +35,7 @@ class Booking {
       bookedAt: bookedAt ?? this.bookedAt,
       status: status ?? this.status,
       cancelReason: cancelReason ?? this.cancelReason,
+      userId: userId ?? this.userId,
     );
   }
 
@@ -43,6 +47,7 @@ class Booking {
       'userEmail': item.userEmail ?? '',
       'userName': item.userName ?? '',
       'cancelReason': cancelReason ?? '',
+      'userId': userId ?? '',
     };
   }
 
@@ -56,6 +61,7 @@ class Booking {
         orElse: () => BookingStatus.pending,
       ),
       cancelReason: json['cancelReason'] as String?,
+      userId: json['userId'] as String?,
     );
   }
 }

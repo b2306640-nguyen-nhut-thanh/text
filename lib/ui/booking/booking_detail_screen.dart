@@ -3,7 +3,10 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/booking.dart';
+import '../auth/auth_manager.dart';
 import 'bookings_manager.dart';
+import '../../services/pocketbase_client.dart';
+
 
 class BookingDetailScreen extends StatelessWidget {
   final String bookingId;
@@ -17,6 +20,8 @@ class BookingDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // Watch from provider to get latest status updates
     final manager = context.watch<BookingsManager>();
+    final isAdmin = context.watch<AuthManager>().isAdmin;
+
     final booking = manager.bookings.cast<Booking?>().firstWhere(
           (b) => b?.id == bookingId,
           orElse: () => null,
@@ -54,7 +59,7 @@ class BookingDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Image.network(
-                    item.imageUrl,
+                    item.getDisplayImageUrl(baseUrl),
                     height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -205,7 +210,66 @@ class BookingDetailScreen extends StatelessWidget {
             const SizedBox(height: 32),
             
             // Actions
-            if (booking.status == BookingStatus.pending || booking.status == BookingStatus.confirmed)
+            if (isAdmin) ...[
+              if (booking.status == BookingStatus.pending)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => context.read<BookingsManager>().cancelBooking(booking.id),
+                        style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+                        child: const Text('Hủy'),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () => context.read<BookingsManager>().confirmBooking(booking.id),
+                        child: const Text('Xác nhận'),
+                      ),
+                    ),
+                  ],
+                ),
+              if (booking.status == BookingStatus.cancel_request)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        border: Border.all(color: Colors.orange),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'Lý do xin hủy: ${booking.cancelReason ?? "Không có"}',
+                        style: TextStyle(color: Colors.orange.shade900),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => context.read<BookingsManager>().rejectCancelBooking(booking.id),
+                            child: const Text('Từ chối hủy'),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: () => context.read<BookingsManager>().cancelBooking(booking.id),
+                            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                            child: const Text('Chấp nhận hủy'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+            ] else if (booking.status == BookingStatus.pending || booking.status == BookingStatus.confirmed)
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(

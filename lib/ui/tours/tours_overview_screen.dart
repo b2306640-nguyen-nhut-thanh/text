@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../models/tour.dart';
 import '../booking/bookings_manager.dart';
 import '../shared/app_header.dart';
 import 'tours_manager.dart';
+import '../../services/pocketbase_client.dart';
 
 enum TourFilter { all, favorites }
 
@@ -42,6 +44,7 @@ class _ToursOverviewScreenState extends State<ToursOverviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // --- PHẦN 1: HEADER & BỘ LỌC TÌM KIẾM ---
       appBar: AppHeader(
         title: const Text('Khám phá tour'),
         actions: [
@@ -81,6 +84,7 @@ class _ToursOverviewScreenState extends State<ToursOverviewScreen> {
             onRefresh: () => context.read<ToursManager>().fetchTours(),
             child: CustomScrollView(
               slivers: [
+                // --- PHẦN 2: THANH TÌM KIẾM ---
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -95,6 +99,7 @@ class _ToursOverviewScreenState extends State<ToursOverviewScreen> {
                   ),
                 ),
                 if (tours.isEmpty)
+                  // --- PHẦN 3: TRẠNG THÁI TRỐNG ---
                   const SliverFillRemaining(
                     hasScrollBody: false,
                     child: Center(
@@ -102,6 +107,7 @@ class _ToursOverviewScreenState extends State<ToursOverviewScreen> {
                     ),
                   )
                 else
+                  // --- PHẦN 4: DANH SÁCH TOUR (GRID) ---
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(8, 0, 8, 90),
                     sliver: SliverLayoutBuilder(
@@ -153,7 +159,7 @@ class TourGridTile extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(tour.imageUrl, fit: BoxFit.cover),
+                  Image.network(tour.getDisplayImageUrl(baseUrl), fit: BoxFit.cover),
                   Positioned(
                     left: 12,
                     bottom: 12,
@@ -209,7 +215,7 @@ class TourGridTile extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          '${tour.price.toStringAsFixed(0)} VNĐ / khách',
+                          '${NumberFormat.decimalPattern('vi_VN').format(tour.price)} VNĐ / khách',
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.primary,
                             fontWeight: FontWeight.bold,

@@ -32,7 +32,7 @@ class _EditPromotionScreenState extends State<EditPromotionScreen> {
     super.initState();
     final promo = widget.promotion;
     _titleController = TextEditingController(text: promo?.title ?? '');
-    _imageUrlController = TextEditingController(text: promo?.imageUrl ?? '');
+    _imageUrlController = TextEditingController(text: promo?.imageFile ?? '');
     _selectedDate = promo?.endDate ?? DateTime.now().add(const Duration(days: 30));
   }
 
@@ -64,8 +64,7 @@ class _EditPromotionScreenState extends State<EditPromotionScreen> {
     final promo = Promotion(
       id: widget.promotion?.id ?? '',
       title: _titleController.text.trim(),
-      imageUrl: _imageUrlController.text.trim(),
-      imageFile: widget.promotion?.imageFile ?? '',
+      imageFile: _imageUrlController.text.trim().isNotEmpty ? _imageUrlController.text.trim() : (widget.promotion?.imageFile ?? ''),
       endDate: _selectedDate ?? DateTime.now(),
     );
 

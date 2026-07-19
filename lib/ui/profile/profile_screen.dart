@@ -15,6 +15,7 @@ class ProfileScreen extends StatelessWidget {
     final hasAvatar = user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty;
 
     return Scaffold(
+      // --- PHẦN 1: HEADER & NÚT ĐĂNG XUẤT ---
       appBar: AppHeader(
         title: const Text('Hồ sơ cá nhân'),
         actions: [
@@ -33,6 +34,7 @@ class ProfileScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
         children: [
+          // --- PHẦN 2: AVATAR & TÊN NGƯỜI DÙNG ---
           Center(
             child: CircleAvatar(
               radius: 50,
@@ -65,6 +67,7 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
+          // --- PHẦN 3: THÔNG TIN CÁ NHÂN CHI TIẾT ---
           Text(
             'Thông tin cá nhân',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -108,6 +111,7 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+          // --- PHẦN 4: MENU QUẢN TRỊ VIÊN (Chỉ hiện cho Admin) ---
           if (user?.isAdmin == true) ...[
             Text(
               'Quản trị viên',
@@ -159,6 +163,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
           ],
+          // --- PHẦN 5: HOẠT ĐỘNG (BOOKING) ---
           Text(
             'Hoạt động',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
